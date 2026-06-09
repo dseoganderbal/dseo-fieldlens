@@ -362,12 +362,54 @@
             });
         }
 
+        function processTo43(dataUrl) {
+            return new Promise(resolve => {
+                if (!dataUrl || !dataUrl.startsWith('data:image')) {
+                    resolve(dataUrl);
+                    return;
+                }
+                const img = new Image();
+                img.onload = () => {
+                    const targetWidth = 1920;
+                    const targetHeight = 1440;
+                    const canvas = document.createElement('canvas');
+                    canvas.width = targetWidth;
+                    canvas.height = targetHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = "#ffffff";
+                    ctx.fillRect(0, 0, targetWidth, targetHeight);
+
+                    const iw = img.naturalWidth || img.width;
+                    const ih = img.naturalHeight || img.height;
+                    const imgRatio = iw / ih;
+                    const targetRatio = targetWidth / targetHeight;
+                    let sx = 0, sy = 0, sw = iw, sh = ih;
+
+                    if (imgRatio > targetRatio) {
+                        sw = ih * targetRatio;
+                        sx = (iw - sw) / 2;
+                    } else {
+                        sh = iw / targetRatio;
+                        sy = (ih - sh) / 2;
+                    }
+
+                    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetWidth, targetHeight);
+                    resolve(canvas.toDataURL('image/jpeg', 0.88));
+                };
+                img.onerror = () => resolve(dataUrl);
+                img.src = dataUrl;
+            });
+        }
+
         const btn = document.getElementById('vfPrintBtn');
         const ogText = btn.innerHTML;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
         btn.disabled = true;
 
-        Promise.all([getBase64Image(p1), getBase64Image(p2)]).then(([b64_1, b64_2]) => {
+        Promise.all([
+            getBase64Image(p1).then(processTo43), 
+            getBase64Image(p2).then(processTo43)
+        ]).then(([b64_1, b64_2]) => {
             let hasPhoto = false;
 
             if (b64_1) {
@@ -448,40 +490,12 @@
 
         const reader = new FileReader();
         reader.onload = e => {
-            const img = new Image();
-            img.onload = () => {
-                // Force exactly 1920x1440 resolution (4:3)
-                const targetWidth = 1920;
-                const targetHeight = 1440;
-                const canvas = document.createElement('canvas');
-                canvas.width = targetWidth;
-                canvas.height = targetHeight;
-                const ctx = canvas.getContext('2d');
-
-                const iw = img.naturalWidth || img.width;
-                const ih = img.naturalHeight || img.height;
-                const imgRatio = iw / ih;
-                const targetRatio = targetWidth / targetHeight;
-                let sx = 0, sy = 0, sw = iw, sh = ih;
-
-                if (imgRatio > targetRatio) {
-                    sw = ih * targetRatio;
-                    sx = (iw - sw) / 2;
-                } else {
-                    sh = iw / targetRatio;
-                    sy = (ih - sh) / 2;
-                }
-
-                ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetWidth, targetHeight);
-
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
-                const imgEl = document.getElementById(`${prefix}photoImg${n}`);
-                imgEl.src = dataUrl;
-                imgEl.dataset.isNew = "true";
-                document.getElementById(`${prefix}photoPreview${n}`).style.display = 'block';
-                document.getElementById(`${prefix}photoPlaceholder${n}`).style.display = 'none';
-            };
-            img.src = e.target.result;
+            const dataUrl = e.target.result;
+            const imgEl = document.getElementById(`${prefix}photoImg${n}`);
+            imgEl.src = dataUrl;
+            imgEl.dataset.isNew = "true";
+            document.getElementById(`${prefix}photoPreview${n}`).style.display = 'block';
+            document.getElementById(`${prefix}photoPlaceholder${n}`).style.display = 'none';
         };
         reader.readAsDataURL(file);
     }
