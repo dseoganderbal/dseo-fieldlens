@@ -1,0 +1,283 @@
+<!--    DASHBOARD PAGE    -->
+<div id="page-dashboard">
+
+
+
+    <!-- Filter Bar -->
+    <div class="filter-bar animate-in delay-1">
+        <div class="filter-group">
+            <label class="filter-label" for="worksYear">Works Financial Year</label>
+            <select class="form-select" id="worksYear">
+                <option value="2025-26">2025 26</option>
+                <option value="2026-27">2026 27</option>
+            </select>
+        </div>
+        <div class="filter-group" id="pvYearContainer">
+            <label class="filter-label" for="pvYear">PV Financial Year</label>
+            <select class="form-select" id="pvYear">
+                <option value="All">All Works</option>
+                <option value="2025-26">2025 26</option>
+                <option value="2026-27" selected>2026 27</option>
+
+            </select>
+        </div>
+        <div class="filter-group" style="max-width:180px;">
+            <label class="filter-label">&nbsp;</label>
+            <button class="btn btn-primary" onclick="updateDashboard()" id="applyFiltersBtn">
+                <i class="fa-solid fa-sliders"></i> Apply Filters
+            </button>
+        </div>
+        <div style="margin-left:auto; display:flex; align-items:flex-end;">
+            <div style="font-size:12px; color:var(--text-muted); text-align:right;">
+                <div style="color:var(--success); font-weight:600;">  Live</div>
+                <div>Last updated: May 2026</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card blue animate-in delay-1">
+            <div class="kpi-top">
+                <div class="kpi-icon-wrap"><i class="fa-solid fa-briefcase"></i></div>
+                <div class="kpi-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +12%</div>
+            </div>
+            <div class="kpi-value" id="totalWorks">0</div>
+            <div class="kpi-label">Total Works</div>
+            <div class="kpi-mini-bar">
+                <div class="kpi-mini-fill" id="totalWorksBar" style="width:100%"></div>
+            </div>
+        </div>
+
+        <div class="kpi-card green animate-in delay-2">
+            <div class="kpi-top">
+                <div class="kpi-icon-wrap"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="kpi-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> 69%</div>
+            </div>
+            <div class="kpi-value" id="verifiedWorks">0</div>
+            <div class="kpi-label">Works Verified</div>
+            <div class="kpi-mini-bar">
+                <div class="kpi-mini-fill" id="verifiedWorksBar" style="width:69%"></div>
+            </div>
+        </div>
+
+        <div class="kpi-card amber animate-in delay-3">
+            <div class="kpi-top">
+                <div class="kpi-icon-wrap"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                <div class="kpi-trend trend-warn"><i class="fa-solid fa-triangle-exclamation"></i> Pending</div>
+            </div>
+            <div class="kpi-value" id="pendingWorks">0</div>
+            <div class="kpi-label">Verification Pending</div>
+            <div class="kpi-mini-bar">
+                <div class="kpi-mini-fill" id="pendingWorksBar" style="width:30%"></div>
+            </div>
+        </div>
+
+        <div class="kpi-card red animate-in delay-4">
+            <div class="kpi-top">
+                <div class="kpi-icon-wrap"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+                <div class="kpi-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +8%</div>
+            </div>
+            <div class="kpi-value"><span id="claimAmount">0.0</span><span
+                    style="font-size:16px; font-weight:500; margin-left:4px;">L</span></div>
+            <div class="kpi-label">Total Claim (  Lakhs)</div>
+            <div class="kpi-mini-bar">
+                <div class="kpi-mini-fill" id="claimBar" style="width:80%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row-2-60-40">
+        <!-- Bar Chart -->
+        <div class="card animate-in delay-1">
+            <div class="card-title">
+                <span class="card-title-dot"></span>
+                Constituency-wise Verification Status
+            </div>
+            <div class="chart-wrap">
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Progress / Donut -->
+        <div class="card animate-in delay-2">
+            <div class="card-title">
+                <span class="card-title-dot" style="background:var(--success)"></span>
+                Verification Progress
+            </div>
+
+            <div style="display:flex; justify-content:center; margin-bottom:18px;">
+                <div style="width:150px; height:150px; position:relative;">
+                    <canvas id="donutChart"></canvas>
+                    <div
+                        style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                        <div id="donutPercentText" style="font-size:22px; font-weight:800; color:var(--success);">0%
+                        </div>
+                        <div style="font-size:11px; color:var(--text-muted);">Verified</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="progress-item">
+                <div class="progress-header">
+                    <span class="progress-label">Overall Verification</span>
+                    <span class="progress-val" id="progressOverallVal">0 / 0</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill fill-success" id="progressOverallBar" style="width:0%"></div>
+                </div>
+            </div>
+
+            <div class="progress-item">
+                <div class="progress-header">
+                    <span class="progress-label">Reports Submitted</span>
+                    <span class="progress-val" id="progressReportsVal">0 Reports</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill fill-accent" id="progressReportsBar" style="width:0%"></div>
+                </div>
+            </div>
+
+            <div class="progress-item">
+                <div class="progress-header">
+                    <span class="progress-label">Pending Verification</span>
+                    <span class="progress-val" id="progressPendingVal">0 Works</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill fill-warning" id="progressPendingBar" style="width:0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Constituency Table -->
+    <div class="card animate-in delay-2">
+        <div class="card-title">
+            <span class="card-title-dot" style="background:var(--info)"></span>
+            Constituency-wise Physical Verification Status
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>S.No.</th>
+                        <th>Assembly Constituency</th>
+                        <th>Works Received for PV</th>
+                        <th>AA Cost (  L)</th>
+                        <th>Works Verified by DSEO</th>
+                        <th>Reports Forwarded</th>
+                    </tr>
+                </thead>
+                <tbody id="constituencyTableBody">
+                    <tr>
+                        <td colspan="6" style="text-align:center;padding:20px;">
+                            Loading...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Financial Status Table -->
+    <div class="card animate-in delay-2">
+        <div class="card-title">
+            <span class="card-title-dot" style="background:var(--warning)"></span>
+            Financial Status of Verified Works &amp; Under Progress Verification
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>S.No.</th>
+                        <th>Name of AC</th>
+                        <th>Works</th>
+                        <th>AA Cost (  L)</th>
+                        <th>Allotted Cost (  L)</th>
+                        <th>Claim (  L)</th>
+                    </tr>
+                </thead>
+                <tbody id="financialTableBody">
+                    <tr>
+                        <td colspan="6" style="text-align:center;padding:20px;">
+                            Loading...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Block-Wise Table -->
+    <div class="card animate-in delay-3">
+        <div class="card-title">
+            <span class="card-title-dot" style="background:var(--success)"></span>
+            Block-wise Rural Development Department Work
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>S.No.</th>
+                        <th>Block</th>
+                        <th>Works Received</th>
+                        <th>Verified</th>
+                        <th>Under Progress</th>
+                        <th>Reports Forwarded</th>
+                        <th>Reports Under Progress</th>
+                    </tr>
+                </thead>
+                <tbody id="blockTableBody">
+                    <tr>
+                        <td colspan="7" style="text-align:center;padding:20px;">
+                            Loading...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Department-wise Table -->
+    <div class="card animate-in delay-3">
+        <div class="card-title">
+            <span class="card-title-dot" style="background:var(--accent-light)"></span>
+            Department-wise Status
+        </div>
+        <div class="table-actions">
+            <div class="search-wrap">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="searchTable" class="form-control search-input" placeholder="Search department "
+                    onkeyup="searchDepartmentTable()" />
+            </div>
+            <button class="btn btn-success" id="exportBtn" onclick="exportDepartmentExcel()">
+                <i class="fa-solid fa-file-excel"></i> Export Excel
+            </button>
+        </div>
+        <div class="table-wrap">
+            <table id="departmentTable">
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Department</th>
+                        <th>Works Received</th>
+                        <th>Verified</th>
+                        <th>Under Progress</th>
+                        <th>Reports Submitted</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="departmentTableBody">
+                    <tr>
+                        <td colspan="7" style="text-align:center;padding:20px;">
+                            Loading...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+<!-- END dashboard page -->
