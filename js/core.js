@@ -274,7 +274,9 @@ let worksData = [];
     });
 
     // Apply saved theme on load
-    applyTheme(currentTheme);
+    document.addEventListener('DOMContentLoaded', () => {
+        applyTheme(currentTheme);
+    });
 
     /*                                           
        WORK DETAILS MODAL
