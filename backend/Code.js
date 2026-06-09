@@ -6,9 +6,23 @@ function doGet(e) {
 
 function doPost(e) {
   try {
+    if (!e || !e.postData || !e.postData.contents) {
+      throw new Error("Invalid request payload.");
+    }
     const payload = JSON.parse(e.postData.contents);
     const action = payload.action;
     const args = payload.args || [];
+    
+    // Security: Only allow functions that are explicitly meant for API access
+    const allowedActions = [
+      'loginUser', 'verifyToken', 'logoutUser', 'getWorksData', 'getNewWorkcode',
+      'submitWorkEntryData', 'getMasterData', 'getWorkEntry', 'deleteWorkEntry',
+      'updateUnifiedRecord', 'updatePVSubmission', 'getWorkPhotos', 'getDriveImageBase64',
+      'getPVReports', 'deletePVReport', 'getAllUsers', 'addUser', 'updateUser', 'deleteUser', 'updateProfile'
+    ];
+    if (!allowedActions.includes(action)) {
+      throw new Error("Action forbidden: " + action);
+    }
     
     // We map action names to functions in this script
     if (typeof this[action] === 'function') {
@@ -267,21 +281,26 @@ function submitWorkEntryData(token, entry, fileData, fileName) {
       Document: ['document', 'doc']
     };
 
+    const parseNum = (val) => {
+      const n = parseFloat(val);
+      return isNaN(n) ? 0 : n;
+    };
+
     const entryData = {
-      worksyear: entry.worksYear,
-      pvyear: entry.pvYear,
-      date: entry.dateReceipt,
-      code: entry.workcode,
-      name: entry.workName,
-      constituency: entry.constituency,
-      dept: entry.department,
-      agency: entry.agency,
-      block: entry.block,
-      location: entry.location,
-      cost: entry.aaCost,
-      allotted: entry.allottedCost,
-      positionAA: entry.positionAA,
-      claim: entry.claim,
+      worksyear: String(entry.worksYear || ''),
+      pvyear: String(entry.pvYear || ''),
+      date: String(entry.dateReceipt || ''),
+      code: String(entry.workcode || ''),
+      name: String(entry.workName || ''),
+      constituency: String(entry.constituency || ''),
+      dept: String(entry.department || ''),
+      agency: String(entry.agency || ''),
+      block: String(entry.block || ''),
+      location: String(entry.location || ''),
+      cost: parseNum(entry.aaCost),
+      allotted: parseNum(entry.allottedCost),
+      positionAA: String(entry.positionAA || ''),
+      claim: parseNum(entry.claim),
       status: 'Pending',
       Document: docUrl
     };
@@ -659,8 +678,17 @@ function updateUnifiedRecord(token, payload, files) {
       remarks: ['general remarks', 'remarks']
     };
 
+    const parseNum = (val) => {
+      if (val === undefined || val === null || val === '') return undefined;
+      const n = parseFloat(val);
+      return isNaN(n) ? 0 : n;
+    };
+
     const entryData = {
       ...payload,
+      cost: payload.cost !== undefined ? parseNum(payload.cost) : undefined,
+      allotted: payload.allotted !== undefined ? parseNum(payload.allotted) : undefined,
+      claim: payload.claim !== undefined ? parseNum(payload.claim) : undefined,
       Document: docUrl
     };
 

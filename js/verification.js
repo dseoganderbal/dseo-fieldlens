@@ -1,0 +1,464 @@
+    function fetchVerificationWork() {
+        const code = document.getElementById('vfWorkcode').value.trim().toUpperCase();
+        const notFound = document.getElementById('vfNotFound');
+        const banner = document.getElementById('vfFoundBanner');
+        const fields = document.getElementById('vfWorkFields');
+
+        notFound.style.display = 'none';
+        banner.style.display = 'none';
+        fields.style.display = 'none';
+
+        if (!code) return;
+
+        document.getElementById('vfWorkcode').disabled = true;
+        const btn = document.querySelector('.vf-lookup-bar .btn-primary');
+        const origBtnHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Fetching...';
+        btn.disabled = true;
+
+        google.script.run
+            .withSuccessHandler(function (data) {
+                document.getElementById('vfWorkcode').disabled = false;
+                btn.innerHTML = origBtnHtml;
+                btn.disabled = false;
+
+                if (!data || !data.code) {
+                    notFound.style.display = 'flex';
+                    return;
+                }
+
+                const parseFin = (val) => {
+                    if (val === null || val === undefined || val === '') return 0;
+                    const num = parseFloat(String(val).replace(/,/g, ''));
+                    return isNaN(num) ? 0 : num;
+                };
+
+                // Fill disabled fields
+                document.getElementById('vfDateReceipt').value = data.recieptdate || data.date || data['date of receipt'] || '';
+                document.getElementById('vfWorkName').value = data.name || '';
+                document.getElementById('vfConstituency').value = data.constituency || '';
+                document.getElementById('vfDept').value = data.dept || '';
+                document.getElementById('vfAgency').value = data.agency || '';
+                document.getElementById('vfBlock').value = data.block || '';
+                document.getElementById('vfLocation').value = data.location || '';
+                document.getElementById('vfAACost').value = '\u20B9 ' + parseFin(data.cost).toFixed(2);
+                document.getElementById('vfAllottedCost').value = '\u20B9 ' + parseFin(data.allotted).toFixed(2);
+                document.getElementById('vfClaim').value = '\u20B9 ' + parseFin(data.claim).toFixed(2);
+                document.getElementById('vfAdminApproval').value = data['position a/a'] || data['position aa'] || '';
+
+                fields.style.display = 'grid';
+                banner.style.display = 'flex';
+                const safeName = data.name || '';
+                document.getElementById('vfFoundMsg').textContent =
+                    `Work "${data.code}" loaded - ${safeName.substring(0, 60)}${safeName.length > 60 ? '...' : ''}`;
+
+                // Preload Section 2 verification fields
+                const compStat = data['completion status'] || data['whether completed / in-completed'] || '';
+                document.getElementById('vfCompletionStatus').value = compStat;
+
+                document.getElementById('vfSignboard').value = data['signboard installed'] || data['sign board installed (yes/no)'] || '';
+                document.getElementById('vfQuality').value = data['quality of work'] || '';
+
+                let dv = data['date of visit'] || '';
+                if (dv && dv.includes('-') && dv.split('-')[0].length === 2) {
+                    const p = dv.split('-');
+                    dv = `${p[2]}-${p[1]}-${p[0]}`;
+                }
+                document.getElementById('vfDateVisit').value = dv;
+
+                document.getElementById('vfRemarks').value = data['verifying officer remarks'] || data['remarks of verifying officer/official'] || '';
+                document.getElementById('vfLeftOut').value = data['left out items'] || data['if incomplete specify left out items'] || '';
+                toggleLeftOut(); // Show/hide left out items based on completion status
+
+                // Unlock Section 2, Work Document, Section 4 and Actions
+                ['vfSection2', 'vfSectionDoc', 'vfSection3', 'vfActionsWrap'].forEach(id => {
+                    document.getElementById(id).classList.remove('vf-locked');
+                });
+
+                // Show document if available
+                const docUrl = data.document || data.Document || data.Doc || data.doc;
+                if (docUrl) {
+                    document.getElementById('vfWorkDocument').innerHTML = '<a href="' + docUrl + '" target="_blank" style="color:var(--primary);text-decoration:none;"><i class="fa-solid fa-file-pdf"></i> View Document</a>';
+                } else {
+                    document.getElementById('vfWorkDocument').innerHTML = '<span style="color:var(--text-muted);font-weight:400;">N/A</span>';
+                }
+
+                // Preload existing photos dynamically from Drive
+                const getThumbUrl = (url) => {
+                    if (!url) return '';
+                    if (url.startsWith('data:image')) return url;
+                    const match = url.match(/[-\w]{25,}/);
+                    if (match) return 'https://drive.google.com/thumbnail?id=' + match[0] + '&sz=w800&t=' + Date.now();
+                    return url;
+                };
+                
+                const processVerifiedPhotos = (photos) => {
+                    if (photos && photos[0]) {
+                        document.getElementById("photoImg1").src = getThumbUrl(photos[0]);
+                        document.getElementById("photoImg1").dataset.driveUrl = photos[0];
+                        document.getElementById("photoPreview1").style.display = "block";
+                        document.getElementById("photoPlaceholder1").style.display = "none";
+                    } else {
+                        removePhoto(1);
+                    }
+
+                    if (photos && photos[1]) {
+                        document.getElementById("photoImg2").src = getThumbUrl(photos[1]);
+                        document.getElementById("photoImg2").dataset.driveUrl = photos[1];
+                        document.getElementById("photoPreview2").style.display = "block";
+                        document.getElementById("photoPlaceholder2").style.display = "none";
+                    } else {
+                        removePhoto(2);
+                    }
+                };
+
+                google.script.run
+                    .withSuccessHandler(processVerifiedPhotos)
+                    .withFailureHandler(() => processVerifiedPhotos(['', '']))
+                    .getWorkPhotos(sessionStorage.getItem("cdf_auth_token"), code, data.worksyear || '');
+
+                // Show Print button if status is In progress
+                const vStatus = (data['verification status'] || data.status || '').toLowerCase();
+                if (vStatus === 'in progress' || vStatus === 'completed') {
+                    document.getElementById('vfPrintBtn').style.display = 'inline-flex';
+                } else {
+                    document.getElementById('vfPrintBtn').style.display = 'none';
+                }
+            })
+            .withFailureHandler(function (err) {
+                document.getElementById('vfWorkcode').disabled = false;
+                btn.innerHTML = origBtnHtml;
+                btn.disabled = false;
+                notFound.style.display = 'flex';
+            })
+            .getWorkEntry(sessionStorage.getItem("cdf_auth_token"), code);
+    }
+    function toggleLeftOut() {
+        const val = document.getElementById('vfCompletionStatus').value;
+        const wrap = document.getElementById('vfLeftOutWrap');
+        wrap.style.display = val === 'Incomplete' ? 'flex' : 'none';
+    }
+    function clearVerificationForm() {
+        // Section 1
+        document.getElementById('vfWorkcode').value = '';
+        document.getElementById('vfNotFound').style.display = 'none';
+        document.getElementById('vfFoundBanner').style.display = 'none';
+        document.getElementById('vfWorkFields').style.display = 'none';
+        ['vfDateReceipt', 'vfWorkName', 'vfConstituency', 'vfDept', 'vfAgency',
+            'vfBlock', 'vfLocation', 'vfAACost', 'vfAllottedCost', 'vfClaim']
+            .forEach(id => { document.getElementById(id).value = ''; });
+
+        // Section 2
+        ['vfAdminApproval', 'vfCompletionStatus', 'vfSignboard', 'vfLeftOut',
+            'vfQuality', 'vfDateVisit', 'vfRemarks']
+            .forEach(id => { document.getElementById(id).value = ''; });
+        document.getElementById('vfLeftOutWrap').style.display = 'none';
+
+        // Re-lock sections 2, 3, 4 and actions
+        ['vfSection2', 'vfSectionDoc', 'vfSection3', 'vfActionsWrap'].forEach(id => {
+            document.getElementById(id).classList.add('vf-locked');
+        });
+        document.getElementById('vfWorkDocument').innerHTML = '<span style="color:var(--text-muted);font-weight:400;">N/A</span>';
+
+        // Hide Print Button
+        document.getElementById('vfPrintBtn').style.display = 'none';
+
+        // Clear images
+        removePhoto(1);
+        removePhoto(2);
+    }
+    function submitVerification() {
+        // Basic validation
+        const workcode = document.getElementById('vfWorkcode').value.trim();
+        const fields2 = [
+            { id: 'vfCompletionStatus', label: 'Completion Status' },
+            { id: 'vfSignboard', label: 'Signboard Installed' },
+            { id: 'vfQuality', label: 'Quality of Work' },
+            { id: 'vfDateVisit', label: 'Date of Visit' }
+        ];
+
+        if (!workcode || document.getElementById('vfWorkFields').style.display === 'none') {
+            showCustomAlert('Notice', 'Please fetch a valid work using the Workcode first.');
+            document.getElementById('vfWorkcode').focus();
+            return;
+        }
+
+        for (const f of fields2) {
+            if (!document.getElementById(f.id).value.trim()) {
+                showCustomAlert('Notice', 'Please fill in: ' + f.label);
+                document.getElementById(f.id).focus();
+                return;
+            }
+        }
+
+        if (document.getElementById('vfCompletionStatus').value === 'Incomplete' &&
+            !document.getElementById('vfLeftOut').value.trim()) {
+            showCustomAlert('Notice', 'Please specify the left out items for incomplete work.');
+            document.getElementById('vfLeftOut').focus();
+            return;
+        }
+
+        const payload = {
+            code: workcode,
+            worksyear: workcode.split('-').slice(1, -1).join('-'),
+            completionStatus: document.getElementById('vfCompletionStatus').value,
+            signboard: document.getElementById('vfSignboard').value,
+            quality: document.getElementById('vfQuality').value,
+            verifyRemarks: document.getElementById('vfRemarks').value,
+            leftOut: document.getElementById('vfLeftOut').value,
+            verifyingOfficerName: sessionStorage.getItem('cdf_user_name')
+        };
+
+        if (payload.completionStatus !== 'Incomplete') {
+            payload.leftOut = '';
+        }
+
+        const dtVal = document.getElementById('vfDateVisit').value;
+        if (dtVal && dtVal.includes('-')) {
+            const p = dtVal.split('-');
+            payload.dateVisit = `${p[2]}-${p[1]}-${p[0]}`;
+        } else {
+            payload.dateVisit = dtVal;
+        }
+
+        // Always set overall status to "In Progress" as verification is just the first step
+        payload.status = 'In Progress';
+
+        const files = {};
+        let p1 = document.getElementById("photoImg1").src;
+        if (p1 && p1.startsWith("data:image")) {
+            files.photo1 = p1;
+        } else if (p1 && p1 !== window.location.href) {
+            // Unchanged existing image
+            files.photo1 = document.getElementById("photoImg1").dataset.driveUrl || p1;
+        } else {
+            files.photo1 = '';
+        }
+
+        let p2 = document.getElementById("photoImg2").src;
+        if (p2 && p2.startsWith("data:image")) {
+            files.photo2 = p2;
+        } else if (p2 && p2 !== window.location.href) {
+            files.photo2 = document.getElementById("photoImg2").dataset.driveUrl || p2;
+        } else {
+            files.photo2 = '';
+        }
+
+        const btn = document.getElementById('vfSaveBtn');
+        const ogText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+        btn.disabled = true;
+
+        google.script.run
+            .withSuccessHandler(function () {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+                const toast = document.getElementById('successToast');
+                document.getElementById('toastMsg').textContent = `Verification for "${workcode}" saved successfully.`;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 4000);
+                
+                // Show Print Button after successful save
+                document.getElementById('vfPrintBtn').style.display = 'inline-flex';
+
+                // Refresh list if needed
+                if (worksData.length > 0) {
+                    loadWorksData();
+                }
+            })
+            .withFailureHandler(function (err) {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+                showCustomAlert('Alert', "Failed to save verification: " + (err.message || err));
+            })
+            .updateUnifiedRecord(sessionStorage.getItem("cdf_auth_token"), payload, files);
+    }
+    function generatePDF() {
+        const workcode = document.getElementById('vfWorkcode').value.trim();
+        if (!workcode) return;
+
+        // Fill template
+        document.getElementById('pdfNameOfWork').textContent = document.getElementById('vfWorkName').value;
+        document.getElementById('pdfLocation').textContent = document.getElementById('vfLocation').value;
+        document.getElementById('pdfApprovedCost').textContent = document.getElementById('vfAACost').value;
+        document.getElementById('pdfPositionAA').textContent = document.getElementById('vfAdminApproval').value;
+        document.getElementById('pdfAllottedCost').textContent = document.getElementById('vfAllottedCost').value;
+        document.getElementById('pdfClaimCost').textContent = document.getElementById('vfClaim').value;
+        document.getElementById('pdfCompletionStatus').textContent = document.getElementById('vfCompletionStatus').value;
+        
+        let leftOut = document.getElementById('vfLeftOut').value;
+        document.getElementById('pdfLeftOut').textContent = leftOut ? leftOut : '—';
+        
+        document.getElementById('pdfSignboard').textContent = document.getElementById('vfSignboard').value;
+        document.getElementById('pdfQuality').textContent = document.getElementById('vfQuality').value || '—';
+        const remarksVal = document.getElementById('vfRemarks').value;
+        const remarksRow = document.getElementById('pdfRemarksRow');
+        if (remarksVal && remarksVal.trim() !== '') {
+            document.getElementById('pdfRemarksText').textContent = remarksVal.trim();
+            remarksRow.style.display = 'table-row';
+        } else {
+            remarksRow.style.display = 'none';
+        }
+
+        // Date of visit formatting
+        const dvInput = document.getElementById('vfDateVisit').value; // YYYY-MM-DD
+        let formattedDate = '';
+        if (dvInput) {
+            const parts = dvInput.split('-');
+            formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        document.getElementById('pdfDateVisit').textContent = formattedDate;
+
+        // Photos
+        const p1 = document.getElementById('photoImg1').src;
+        const p1El = document.getElementById('pdfPhoto1');
+        const p2 = document.getElementById('photoImg2').src;
+        const p2El = document.getElementById('pdfPhoto2');
+        const noPhotos = document.getElementById('pdfNoPhotos');
+
+        function getBase64Image(url) {
+            return new Promise(resolve => {
+                if (!url || url.startsWith('data:image') || url.startsWith('blob:') || url === window.location.href) {
+                    resolve(url && url !== window.location.href ? url : null);
+                    return;
+                }
+                google.script.run
+                    .withSuccessHandler(b64 => resolve(b64 || url))
+                    .withFailureHandler(() => resolve(url))
+                    .getDriveImageBase64(url);
+            });
+        }
+
+        const btn = document.getElementById('vfPrintBtn');
+        const ogText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+        btn.disabled = true;
+
+        Promise.all([getBase64Image(p1), getBase64Image(p2)]).then(([b64_1, b64_2]) => {
+            let hasPhoto = false;
+
+            if (b64_1) {
+                p1El.src = b64_1;
+                p1El.style.display = 'block';
+                hasPhoto = true;
+            } else {
+                p1El.style.display = 'none';
+            }
+
+            if (b64_2) {
+                p2El.src = b64_2;
+                p2El.style.display = 'block';
+                hasPhoto = true;
+            } else {
+                p2El.style.display = 'none';
+            }
+
+            const photoTable = document.getElementById('pdfPhotoTable');
+            if (hasPhoto) {
+                noPhotos.style.display = 'none';
+                if (photoTable) photoTable.style.display = 'table';
+            } else {
+                noPhotos.style.display = 'table';
+                if (photoTable) photoTable.style.display = 'none';
+            }
+
+            // Generate PDF
+            const element = document.getElementById('pdfTemplate');
+            
+            // Ensure template wrapper is visible to html2pdf (but off-screen)
+            document.getElementById('pdfTemplateWrapper').style.left = '0';
+            document.getElementById('pdfTemplateWrapper').style.zIndex = '-9999';
+
+            const opt = {
+                margin:       [0.5, 0.3],
+                filename:     `${workcode}_Verification_Report.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollX: 0, scrollY: 0, x: 0, y: 0, windowWidth: 750 },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+                document.getElementById('pdfTemplateWrapper').style.left = '-9999px';
+            }).catch(err => {
+                console.error('PDF generation error', err);
+                showCustomAlert('Notice', 'Failed to generate PDF. Check console for details.');
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+                document.getElementById('pdfTemplateWrapper').style.left = '-9999px';
+            });
+        });
+    }
+    function initGeo() {
+        if (!navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition(
+            pos => { geoCoords = pos.coords; },
+            () => { geoCoords = null; },
+            { enableHighAccuracy: true, timeout: 8000 }
+        );
+    }
+    function triggerPhotoUpload(n, prefix) {
+        prefix = prefix || '';
+        document.getElementById(`${prefix}photoInput${n}`).click();
+    }
+    function handlePhotoSelect(event, n, prefix) {
+        prefix = prefix || '';
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (file.size > 500 * 1024) {
+            showCustomAlert('Alert', 'Image size cannot exceed 500 KB.');
+            event.target.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = e => {
+            const img = new Image();
+            img.onload = () => {
+                // Force exactly 1920x1440 resolution (4:3)
+                const targetWidth = 1920;
+                const targetHeight = 1440;
+                const canvas = document.createElement('canvas');
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
+                const ctx = canvas.getContext('2d');
+
+                const iw = img.naturalWidth || img.width;
+                const ih = img.naturalHeight || img.height;
+                const imgRatio = iw / ih;
+                const targetRatio = targetWidth / targetHeight;
+                let sx = 0, sy = 0, sw = iw, sh = ih;
+
+                if (imgRatio > targetRatio) {
+                    sw = ih * targetRatio;
+                    sx = (iw - sw) / 2;
+                } else {
+                    sh = iw / targetRatio;
+                    sy = (ih - sh) / 2;
+                }
+
+                ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetWidth, targetHeight);
+
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+                document.getElementById(`${prefix}photoImg${n}`).src = dataUrl;
+                document.getElementById(`${prefix}photoPreview${n}`).style.display = 'block';
+                document.getElementById(`${prefix}photoPlaceholder${n}`).style.display = 'none';
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+    function removePhoto(n, prefix) {
+        prefix = prefix || '';
+        const imgEl = document.getElementById(`${prefix}photoImg${n}`);
+        if (imgEl) {
+            imgEl.src = '';
+            delete imgEl.dataset.driveUrl;
+        }
+        document.getElementById(`${prefix}photoPreview${n}`).style.display = 'none';
+        document.getElementById(`${prefix}photoPlaceholder${n}`).style.display = 'flex';
+        const inputEl = document.getElementById(`${prefix}photoInput${n}`);
+        if (inputEl) inputEl.value = '';
+    }
