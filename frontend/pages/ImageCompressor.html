@@ -1,0 +1,65 @@
+<div class="page-header" style="margin-bottom: 24px;">
+    <h2 style="font-weight:700; color:var(--text-primary);">Image Compressor</h2>
+    <div style="color:var(--text-muted); font-size:14px;">Optimize image sizes locally before upload. This tool runs entirely in your browser.</div>
+</div>
+
+<div class="compressor-container">
+    <div class="compressor-settings panel">
+        <h3 class="panel-title"><i class="fa-solid fa-sliders"></i> Settings</h3>
+        
+        <div class="form-field">
+            <label class="field-label">Target Max Size (KB)</label>
+            <input type="number" id="icTargetSize" class="form-control" placeholder="e.g. 500" value="500">
+            <div class="field-hint">Auto-adjusts quality and scale to hit this limit.</div>
+        </div>
+        
+        <div class="form-field" style="margin-top:20px;">
+            <label class="field-label">Manual Quality (0-100%)</label>
+            <input type="range" id="icQuality" min="1" max="100" value="80" class="form-range" style="width:100%;">
+            <div id="icQualityVal" style="text-align:right; font-size:12px; color:var(--text-muted);">80%</div>
+        </div>
+
+        <div class="form-field">
+            <label class="field-label">Manual Scale (10-100%)</label>
+            <input type="range" id="icScale" min="10" max="100" value="100" class="form-range" style="width:100%;">
+            <div id="icScaleVal" style="text-align:right; font-size:12px; color:var(--text-muted);">100%</div>
+        </div>
+
+        <div class="form-row" style="margin-top:24px;">
+            <button class="btn btn-primary" style="flex:1;" onclick="icApplyCompression()">Apply Settings</button>
+            <button class="btn btn-outline" onclick="icReset()">Reset Tool</button>
+        </div>
+    </div>
+
+    <div class="compressor-workspace panel">
+        <div id="icUploadZone" class="upload-zone" onclick="document.getElementById('icFileInput').click()">
+            <i class="fa-solid fa-cloud-arrow-up" style="font-size:48px; color:var(--primary); margin-bottom:16px;"></i>
+            <div style="font-weight:600; font-size:16px;">Click or Drag to Upload Image</div>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:8px;">Supports JPG, PNG, WEBP</div>
+            <input type="file" id="icFileInput" accept="image/*" style="display:none;" onchange="icHandleFileSelect(event)">
+        </div>
+
+        <div id="icPreviewZone" class="preview-zone" style="display:none;">
+            <div class="preview-split">
+                <div class="preview-card">
+                    <div class="preview-header">Original Image</div>
+                    <img id="icOriginalImg" class="preview-img">
+                    <div class="preview-stats" id="icOriginalStats">--</div>
+                </div>
+                <div class="preview-card">
+                    <div class="preview-header" style="color:var(--success);">Compressed Image</div>
+                    <img id="icCompressedImg" class="preview-img">
+                    <div class="preview-stats" id="icCompressedStats" style="color:var(--success); font-weight:600;">--</div>
+                </div>
+            </div>
+            <div class="action-buttons-row" id="icActionButtons">
+                <button class="btn btn-success" id="icDownloadBtn" onclick="icDownload()" style="padding:12px 24px; font-size:16px; border-radius:8px;">
+                    <i class="fa-solid fa-download"></i> Download Compressed Image
+                </button>
+                <button class="btn btn-outline" onclick="icReset()" style="padding:12px 24px; font-size:16px; border-radius:8px;">
+                    <i class="fa-solid fa-arrow-rotate-left"></i> Upload New Image
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,44 @@
+<div class="page-container" id="page-Profile">
+
+
+  <div class="table-container" style="max-width: 600px; margin: 0 auto; padding: 32px;">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <div class="user-avatar" id="profileAvatar"
+        style="width: 80px; height: 80px; font-size: 32px; margin: 0 auto 16px;">U</div>
+      <h2 id="profileDisplayName" style="margin: 0; font-size: 24px;">User Name</h2>
+      <div id="profileDisplayRole" style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">User Role</div>
+    </div>
+
+    <form id="profileForm" onsubmit="event.preventDefault(); submitProfileUpdate();">
+      <div class="form-row full">
+        <div class="form-field readonly">
+          <label class="field-label">User ID (Non-editable)</label>
+          <div class="field-value" id="profileUserId"
+            style="font-family: monospace; background: var(--surface-hover); padding: 12px; border-radius: 8px;">user_id
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row full">
+        <div class="form-field">
+          <label class="field-label" for="profileNameInput">Full Name</label>
+          <input type="text" class="form-control" id="profileNameInput" required>
+        </div>
+      </div>
+
+      <div class="form-row full">
+        <div class="form-field">
+          <label class="field-label" for="profilePasswordInput">New Password</label>
+          <input type="password" class="form-control" id="profilePasswordInput" placeholder="Enter a new password"
+            required minlength="6">
+        </div>
+      </div>
+
+      <div class="form-row full" style="margin-top: 24px; text-align: right;">
+        <button type="submit" class="btn btn-success" id="profileSubmitBtn">
+          <i class="fa-solid fa-floppy-disk"></i> Update Profile
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CDF Physical Verification Monitoring System DSEO Ganderbal</title>
+  <meta name="description"
+    content="CDF Physical Verification Monitoring Dashboard for District Statistical & Evaluation Office, Ganderbal. Track works, verification status, and financial progress." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  
+  <!-- PDF.js & jsPDF for PDF Compressor -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <div id="loginPlaceholder"></div>
+  <script>
+    fetch('pages/Login.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('loginPlaceholder').outerHTML = html;
+      });
+  </script>
+
+  <div id="appContainer" style="display:none; opacity:0; transition: opacity 0.5s ease;">
+
+  <!--    OVERLAY (mobile)    -->
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!--    SIDEBAR    -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-brand">
+      <div class="brand-icon"><i class="fa-solid fa-chart-line"></i></div>
+      <div class="brand-text">
+        <div class="brand-title">CDF Monitor</div>
+        <div class="brand-sub">DSEO Ganderbal</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+
+      <div class="menu-item active" id="navDashboard" onclick="showPage('Dashboard')">
+        <span class="menu-icon"><i class="fa-solid fa-gauge-high"></i></span>
+        <span>Dashboard</span>
+        <span class="menu-badge">Live</span>
+      </div>
+
+      <div class="menu-item" id="navWorks" onclick="toggleWorksMenu()">
+        <span class="menu-icon"><i class="fa-solid fa-folder-tree"></i></span>
+        <span>Works</span>
+        <i class="fa-solid fa-chevron-down menu-chevron open" id="worksChevron"></i>
+      </div>
+      <div class="submenu open" id="worksSubmenu">
+        <div class="submenu-item" onclick="showPage('WorkEntry')" id="workEntryMenu"><i
+            class="fa-solid fa-plus fa-sm"></i>
+          Work Entry</div>
+        <div class="submenu-item" id="verificationMenu" onclick="showPage('Verification')"><i class="fa-solid fa-clipboard-check fa-sm"></i>
+          Verification</div>
+        <div class="submenu-item" id="worksListMenu" onclick="showPage('WorksList')"><i
+            class="fa-solid fa-table-list fa-sm"></i> Works List</div>
+      </div>
+
+      <div class="nav-section-label" id="navReportsLabel">Reports</div>
+
+      <div class="menu-item" id="pvReportsMenu" onclick="showPage('PVReports')">
+        <span class="menu-icon"><i class="fa-solid fa-file-signature"></i></span>
+        <span>PV Reports</span>
+      </div>
+
+      <div class="nav-section-label" id="navUtilityLabel" style="display:none;">Utility</div>
+
+      <div class="menu-item" id="navImageCompressor" onclick="showPage('ImageCompressor')" style="display:none;">
+        <span class="menu-icon"><i class="fa-solid fa-compress"></i></span>
+        <span>Image Compressor</span>
+      </div>
+      <div class="menu-item" id="navPdfCompressor" onclick="showPage('PdfCompressor')" style="display:none;">
+        <span class="menu-icon"><i class="fa-regular fa-file-pdf"></i></span>
+        <span>PDF Compressor</span>
+      </div>
+
+      <div class="nav-section-label" id="navAdminLabel" style="display:none;">Admin</div>
+
+      <div class="menu-item" id="navUserManagement" onclick="showPage('UserManagement')" style="display:none;">
+        <span class="menu-icon"><i class="fa-solid fa-users-gear"></i></span>
+        <span>User Management</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-pill" onclick="showPage('Profile')" style="cursor: pointer;" title="View Profile">
+        <div class="user-avatar">A</div>
+        <div class="user-info">
+          <div class="user-name">Admin</div>
+          <div class="user-role">Super Admin</div>
+        </div>
+        <div class="icon-btn" onclick="event.stopPropagation(); logoutSession();" title="Logout" style="margin-left: auto; width: 32px; height: 32px;">
+          <i class="fa-solid fa-right-from-bracket" style="color:var(--danger);"></i>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!--    MAIN CONTENT    -->
+  <main class="main-content">
+
+    <!--    PERSISTENT TOPBAR    -->
+    <div class="topbar" id="globalTopbar">
+      <div class="topbar-left">
+        <button class="mobile-toggle" id="mobileToggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div>
+          <h1 class="page-title" id="globalPageTitle">Physical Verification Dashboard</h1>
+          <div class="page-sub" id="globalPageSub">District Statistical &amp; Evaluation Office, Ganderbal</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="theme-picker-wrap" id="themePickerWrap">
+          <div class="icon-btn" title="Change Theme" onclick="toggleThemePicker()" id="themeToggleBtn">
+            <i class="fa-solid fa-palette"></i>
+          </div>
+        </div>
+        <div class="icon-btn" title="Export Data" id="globalExportBtn" style="display:none;">
+          <i class="fa-solid fa-cloud-arrow-down"></i>
+        </div>
+        <div class="topbar-avatar" title="Profile" id="globalUserAvatar" onclick="showPage('Profile')" style="cursor: pointer;">U</div>
+      </div>
+    </div>
+
+    <div id="app-content"></div>
+  </main>
+
+  <!-- Work Entry Drawer Removed (Moved to standalone page) -->
+
+  <!-- CUSTOM ALERT MODAL -->
+  <div class="modal-overlay" id="customAlertOverlay"></div>
+  <div class="modal" id="customAlertModal" style="max-width:400px; text-align:center;">
+    <div class="modal-body" style="padding: 32px 24px;">
+      <div id="customAlertIcon" style="font-size:48px; margin-bottom:16px;"></div>
+      <div class="modal-title" id="customAlertTitle" style="font-size:20px; margin-bottom:8px;"></div>
+      <div class="modal-sub" id="customAlertMessage" style="font-size:14px; margin-bottom:24px;"></div>
+      <div style="display:flex; justify-content:center; gap:12px;">
+        <button class="btn btn-outline" id="customAlertCancel" style="display:none;"
+          onclick="closeCustomAlert()">Cancel</button>
+        <button class="btn btn-primary" id="customAlertConfirm">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GEO-TAGGED CAMERA MODAL -->
+  <div class="camera-modal" id="geoCameraModal">
+    <div class="camera-header">
+      <div class="camera-title">Geo-Tagged Camera</div>
+      <button class="camera-close" onclick="closeGeoCamera()" title="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="camera-viewport">
+      <video id="geoCameraVideo" autoplay playsinline></video>
+      <div class="camera-overlay" id="geoCameraOverlay">
+        <i class="fa-solid fa-location-dot fa-bounce"></i> Acquiring Location...
+      </div>
+      <canvas id="geoCameraCanvas" style="display:none;"></canvas>
+    </div>
+    <div class="camera-controls">
+      <button class="btn btn-outline" onclick="switchGeoCamera()" title="Switch Camera" id="geoCameraSwitchBtn" style="border-color: rgba(255,255,255,0.3); color: white; border-radius: 50%; width: 50px; height: 50px; padding: 0;">
+        <i class="fa-solid fa-camera-rotate" style="font-size: 20px;"></i>
+      </button>
+      <button class="camera-shutter" id="geoCameraShutter" onclick="captureGeoPhoto()" disabled></button>
+      <div style="width: 50px;"></div> <!-- spacer to balance the switch button -->
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="successToast">
+    <div class="toast-icon"><i class="fa-solid fa-check"></i></div>
+    <div>
+      <div class="toast-title">Work Saved Successfully!</div>
+      <div class="toast-msg" id="toastMsg">Entry has been recorded.</div>
+    </div>
+  </div>
+
+  <!--    WORK DETAILS MODAL (READ-ONLY)    -->
+  <div class="modal-overlay" id="wdModalOverlay" onclick="closeWorkDetails()"></div>
+  <div class="modal" id="wdModal">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-icon"><i class="fa-solid fa-file-invoice"></i></div>
+        <div>
+          <div class="modal-title" id="wdModalTitle">Work Details</div>
+          <div class="modal-sub" id="wdModalSub">Information and current status</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeWorkDetails()" title="Close">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form class="wd-form-view" id="wdFormView">
+        <div class="form-section-label"><i class="fa-solid fa-tag"></i> Identification</div>
+        <div class="form-row">
+          <div class="form-field readonly"><label class="field-label">Workcode</label>
+            <div class="field-value fw-600" id="wd_WorkCode"></div>
+          </div>
+          <div class="form-field readonly"><label class="field-label">Date of Receipt</label>
+            <div class="field-value" id="wd_ReceiptDate"></div>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-field readonly"><label class="field-label">Name of Work</label>
+            <div class="field-value" id="wd_NameOfWork"></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field readonly"><label class="field-label">Works Year</label>
+            <div class="field-value" id="wd_WorksYear"></div>
+          </div>
+          <div class="form-field readonly"><label class="field-label">PV Year</label>
+            <div class="field-value" id="wd_PVYear"></div>
+          </div>
+        </div>
+
+        <div class="form-section-label"><i class="fa-solid fa-map-location-dot"></i> Location Details</div>
+        <div class="form-row">
+          <div class="form-field readonly"><label class="field-label">Constituency</label>
+            <div class="field-value" id="wd_Constituency"></div>
+          </div>
+          <div class="form-field readonly"><label class="field-label">Block</label>
+            <div class="field-value" id="wd_Block"></div>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-field readonly"><label class="field-label">Location / Village</label>
+            <div class="field-value" id="wd_Location"></div>
+          </div>
+        </div>
+
+        <div class="form-section-label"><i class="fa-solid fa-building-columns"></i> Department &amp; Agency</div>
+        <div class="form-row">
+          <div class="form-field readonly"><label class="field-label">Department</label>
+            <div class="field-value" id="wd_Department"></div>
+          </div>
+          <div class="form-field readonly"><label class="field-label">Executing Agency</label>
+            <div class="field-value" id="wd_Agency"></div>
+          </div>
+        </div>
+
+        <div class="form-section-label"><i class="fa-solid fa-indian-rupee-sign"></i> Financial Details</div>
+        <div class="form-row">
+          <div class="form-field readonly"><label class="field-label">AA Cost (Rs. in Lakhs)</label>
+            <div class="field-value fw-600" id="wd_AACost"></div>
+          </div>
+          <div class="form-field readonly"><label class="field-label">Allotted Amount (Rs. in Lakhs)</label>
+            <div class="field-value fw-600" id="wd_Allotted"></div>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-field readonly"><label class="field-label">Claim Amount (Rs. in Lakhs)</label>
+            <div class="field-value fw-600" id="wd_Claim"></div>
+          </div>
+        </div>
+
+        <div class="form-section-label"><i class="fa-solid fa-clipboard-check"></i> Verification Status</div>
+        <div class="form-row">
+          <div class="form-field readonly"><label class="field-label">Verification Status</label>
+            <div class="field-value fw-600" id="wd_Status"></div>
+          </div>
+          <div class="form-field readonly"><label class="field-label">Date of Visit</label>
+            <div class="field-value" id="wd_DateVisit"></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field readonly"><label class="field-label">Position A/A</label>
+            <div class="field-value" id="wd_PositionAA"></div>
+          </div>
+          <div class="form-field readonly"><label class="field-label">Work Completion Status</label>
+            <div class="field-value" id="wd_CompletionStatus"></div>
+          </div>
+        </div>
+        <div class="form-row full" id="wd_LeftOutWrap">
+          <div class="form-field readonly"><label class="field-label">Left Out Items</label>
+            <div class="field-value" id="wd_LeftOut"></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field readonly"><label class="field-label">Signboard Installed</label>
+            <div class="field-value" id="wd_Signboard"></div>
+          </div>
+          <div class="form-field readonly"><label class="field-label">Quality of Work</label>
+            <div class="field-value" id="wd_Quality"></div>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-field readonly"><label class="field-label">Verifying Officer Remarks</label>
+            <div class="field-value" id="wd_VerifyRemarks"></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field readonly"><label class="field-label">Submission Date</label>
+            <div class="field-value" id="wd_SubmissionDate"></div>
+          </div>
+          <div class="form-field readonly"><label class="field-label">Documents</label>
+            <div class="field-value" id="wd_Documents"></div>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-field readonly"><label class="field-label">General Remarks</label>
+            <div class="field-value" id="wd_Remarks"></div>
+          </div>
+        </div>
+
+        <div class="form-section-label" style="margin-top:20px;"><i class="fa-solid fa-camera"></i> Verification Photos
+        </div>
+
+        <div class="photo-grid" id="wd_PhotosWrap" style="margin-bottom: 16px;">
+          <!-- Photo 1 -->
+          <div class="photo-card" id="wd_photoCard1">
+            <div class="photo-placeholder" id="wd_photoPlaceholder1" style="cursor:default">
+              <div class="photo-placeholder-icon ph-blue"><i class="fa-solid fa-image"></i></div>
+              <div class="photo-placeholder-title">Photograph 1</div>
+              <div class="photo-placeholder-sub">Before / During work<br>No photo provided</div>
+            </div>
+            <div class="photo-preview" id="wd_photoPreview1" style="display:none;">
+              <img src="" id="wd_photoImg1" alt="Photo 1" />
+            </div>
+            <div class="photo-label">Photo 1 Before / During</div>
+          </div>
+
+          <!-- Photo 2 -->
+          <div class="photo-card" id="wd_photoCard2">
+            <div class="photo-placeholder" id="wd_photoPlaceholder2" style="cursor:default">
+              <div class="photo-placeholder-icon ph-green"><i class="fa-solid fa-image"></i></div>
+              <div class="photo-placeholder-title">Photograph 2</div>
+              <div class="photo-placeholder-sub">After / Completed work<br>No photo provided</div>
+            </div>
+            <div class="photo-preview" id="wd_photoPreview2" style="display:none;">
+              <img src="" id="wd_photoImg2" alt="Photo 2" />
+            </div>
+            <div class="photo-label">Photo 2 After / Completed</div>
+          </div>
+        </div>
+
+
+      </form>
+    </div>
+  </div>
+
+  <!--    UNIFIED EDIT MODAL    -->
+  <div class="modal-overlay" id="ueModalOverlay" onclick="closeUnifiedEdit()"></div>
+  <div class="modal" id="ueModal">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-icon"><i class="fa-solid fa-pen-to-square"></i></div>
+        <div>
+          <div class="modal-title" id="ueModalTitle">Edit Record</div>
+          <div class="modal-sub" id="ueModalSub">Modify work details and verification status</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeUnifiedEdit()" title="Close">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form class="wd-form-view" id="ueFormView" style="display:flex; flex-direction:column; gap:16px;">
+        <div class="form-section-label"><i class="fa-solid fa-tag"></i> Identification</div>
+        <div class="form-row">
+          <div class="form-field"><label class="field-label">Workcode</label><input type="text" class="form-control"
+              id="ue_WorkCode" disabled /></div>
+          <div class="form-field"><label class="field-label">Date of Receipt</label><input type="date"
+              class="form-control" id="ue_ReceiptDate" /></div>
+        </div>
+        <div class="form-row full">
+          <div class="form-field"><label class="field-label">Name of Work</label><textarea class="form-control"
+              id="ue_NameOfWork" rows="2" style="resize:vertical; min-height:60px;"></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label class="field-label">Works Year</label><select class="form-select"
+              id="ue_WorksYear"></select></div>
+          <div class="form-field"><label class="field-label">PV Year</label><select class="form-select"
+              id="ue_PVYear"></select></div>
+        </div>
+
+        <div class="form-section-label"><i class="fa-solid fa-map-location-dot"></i> Location Details</div>
+        <div class="form-row">
+          <div class="form-field"><label class="field-label">Constituency</label><select class="form-select"
+              id="ue_Constituency"></select></div>
+          <div class="form-field"><label class="field-label">Block</label><select class="form-select"
+              id="ue_Block"></select></div>
+        </div>
+        <div class="form-row full">
+          <div class="form-field"><label class="field-label">Location / Village</label><input type="text"
+              class="form-control" id="ue_Location" /></div>
+        </div>
+
+        <div class="form-section-label"><i class="fa-solid fa-building-columns"></i> Department &amp; Agency</div>
+        <div class="form-row">
+          <div class="form-field"><label class="field-label">Department</label><select class="form-select"
+              id="ue_Department"></select></div>
+          <div class="form-field"><label class="field-label">Executing Agency</label><select class="form-select"
+              id="ue_Agency"></select></div>
+        </div>
+
+        <div class="form-section-label"><i class="fa-solid fa-indian-rupee-sign"></i> Financial Details</div>
+        <div class="form-row">
+          <div class="form-field"><label class="field-label">AA Cost (Lakhs)</label><input type="number" step="0.001"
+              class="form-control" id="ue_AACost" /></div>
+          <div class="form-field"><label class="field-label">Allotted Amount (Lakhs)</label><input type="number"
+              step="0.001" class="form-control" id="ue_Allotted" /></div>
+        </div>
+        <div class="form-row full">
+          <div class="form-field"><label class="field-label">Claim Amount (Lakhs)</label><input type="number"
+              step="0.001" class="form-control" id="ue_Claim" /></div>
+        </div>
+
+        <div class="form-section-label"><i class="fa-solid fa-clipboard-check"></i> Verification Status</div>
+        <div class="form-row">
+          <div class="form-field"><label class="field-label">Status</label>
+            <select class="form-select" id="ue_Status">
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+              <option value="Needs Correction">Needs Correction</option>
+            </select>
+          </div>
+          <div class="form-field"><label class="field-label">Date of Visit</label><input type="date"
+              class="form-control" id="ue_DateVisit" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label class="field-label">Position A/A</label><select class="form-select"
+              id="ue_PositionAA"></select></div>
+          <div class="form-field"><label class="field-label">Completion Status</label>
+            <select class="form-select" id="ue_CompletionStatus"
+              onchange="document.getElementById('ue_LeftOutWrap').style.display = this.value === 'Incomplete' ? 'block' : 'none'">
+              <option value=""> Select </option>
+              <option value="Completed">Completed</option>
+              <option value="Incomplete">Incomplete</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row full" id="ue_LeftOutWrap" style="display:none;">
+          <div class="form-field"><label class="field-label">Left Out Items</label><input type="text"
+              class="form-control" id="ue_LeftOut" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label class="field-label">Signboard Installed</label>
+            <select class="form-select" id="ue_Signboard">
+              <option value=""> Select </option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <div class="form-field"><label class="field-label">Quality of Work</label>
+            <select class="form-select" id="ue_Quality">
+              <option value=""> Select </option>
+              <option value="Excellent">Excellent</option>
+              <option value="Satisfactory">Satisfactory</option>
+              <option value="Poor">Poor</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-field"><label class="field-label">Verifying Officer Remarks</label><input type="text"
+              class="form-control" id="ue_VerifyRemarks" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label class="field-label">Submission Date</label><input type="date"
+              class="form-control" id="ue_SubmissionDate" /></div>
+          <div class="form-field"><label class="field-label">Geo Coordinates</label><input type="text"
+              class="form-control" id="ue_GeoCoords" placeholder="e.g. 34.012, 74.341" /></div>
+        </div>
+        <div class="form-section-label" style="margin-top:20px;"><i class="fa-solid fa-file-pdf"></i> Document Upload
+        </div>
+        <div class="form-row full">
+          <div class="form-field">
+            <label class="field-label" for="ue_Document">Upload New Document (PDF only)</label>
+            <div id="ue_CurrentDocLink" style="margin-bottom:8px; display:none;"></div>
+            <input type="file" class="form-control" id="ue_Document" accept="application/pdf" />
+            <div class="field-hint">Upload a new file to replace the existing document. Max 5MB.</div>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-field"><label class="field-label">General Remarks</label><input type="text"
+              class="form-control" id="ue_Remarks" /></div>
+        </div>
+
+        <div class="form-section-label" style="margin-top:20px;"><i class="fa-solid fa-camera"></i> Site Photographs
+        </div>
+
+        <div class="photo-grid" id="ue_PhotosWrap" style="margin-bottom: 16px;">
+          <!-- Photo 1 -->
+          <div class="photo-card" id="ue_photoCard1">
+            <div class="photo-placeholder" id="ue_photoPlaceholder1" onclick="triggerPhotoUpload(1, 'gallery', 'ue_')">
+              <div class="photo-placeholder-icon ph-blue"><i class="fa-solid fa-image"></i></div>
+              <div class="photo-placeholder-title">Photograph 1</div>
+              <div class="photo-placeholder-sub">Before / During work<br>Click to add</div>
+              <div class="photo-btn-row" onclick="event.stopPropagation()">
+                <button type="button" class="photo-btn" onclick="triggerPhotoUpload(1,'gallery','ue_')">
+                  <i class="fa-solid fa-folder-open"></i> Gallery
+                </button>
+                <button type="button" class="photo-btn cam" onclick="triggerPhotoUpload(1,'camera','ue_')">
+                  <i class="fa-solid fa-camera"></i> Camera
+                </button>
+              </div>
+            </div>
+            <div class="photo-preview" id="ue_photoPreview1" style="display:none;">
+              <img src="" id="ue_photoImg1" alt="Photo 1" />
+              <button type="button" class="photo-remove" onclick="removePhoto(1, 'ue_')" title="Remove photo">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <input type="file" id="ue_photoInput1" accept="image/*" style="display:none"
+              onchange="handlePhotoSelect(event, 1, 'ue_')" />
+            <input type="file" id="ue_photoCam1" accept="image/*" capture="environment" style="display:none"
+              onchange="handlePhotoSelect(event, 1, 'ue_')" />
+
+          </div>
+
+          <!-- Photo 2 -->
+          <div class="photo-card" id="ue_photoCard2">
+            <div class="photo-placeholder" id="ue_photoPlaceholder2" onclick="triggerPhotoUpload(2, 'gallery', 'ue_')">
+              <div class="photo-placeholder-icon ph-green"><i class="fa-solid fa-image"></i></div>
+              <div class="photo-placeholder-title">Photograph 2</div>
+              <div class="photo-placeholder-sub">After / Completed work<br>Click to add</div>
+              <div class="photo-btn-row" onclick="event.stopPropagation()">
+                <button type="button" class="photo-btn" onclick="triggerPhotoUpload(2,'gallery','ue_')">
+                  <i class="fa-solid fa-folder-open"></i> Gallery
+                </button>
+                <button type="button" class="photo-btn cam" onclick="triggerPhotoUpload(2,'camera','ue_')">
+                  <i class="fa-solid fa-camera"></i> Camera
+                </button>
+              </div>
+            </div>
+            <div class="photo-preview" id="ue_photoPreview2" style="display:none;">
+              <img src="" id="ue_photoImg2" alt="Photo 2" />
+              <button type="button" class="photo-remove" onclick="removePhoto(2, 'ue_')" title="Remove photo">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <input type="file" id="ue_photoInput2" accept="image/*" style="display:none"
+              onchange="handlePhotoSelect(event, 2, 'ue_')" />
+            <input type="file" id="ue_photoCam2" accept="image/*" capture="environment" style="display:none"
+              onchange="handlePhotoSelect(event, 2, 'ue_')" />
+
+          </div>
+        </div>
+
+        <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:12px;">
+          <button type="button" class="btn btn-outline" onclick="closeUnifiedEdit()">Cancel</button>
+          <button type="button" class="btn btn-success" id="btnUpdateUnified" onclick="submitUnifiedEdit()"><i
+              class="fa-solid fa-floppy-disk"></i> Update Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+
+  <!--    THEME PICKER POPOVER (body-level so position:fixed escapes all stacking contexts)    -->
+  <div class="theme-picker-popover" id="themePopover">
+    <div class="theme-picker-label"><i class="fa-solid fa-swatchbook"></i> &nbsp;Choose Theme</div>
+    <div class="theme-opt" id="topt-default" onclick="setTheme('default')">
+      <span class="theme-swatch"
+        style="background:linear-gradient(135deg,#f8fafc,#e2e8f0);border:1.5px solid #cbd5e1;"></span>
+      <span class="theme-opt-name">Light</span>
+      <i class="fa-solid fa-check theme-check"></i>
+    </div>
+    <div class="theme-opt" id="topt-dark" onclick="setTheme('dark')">
+      <span class="theme-swatch" style="background:linear-gradient(135deg,#0f172a,#1e293b)"></span>
+      <span class="theme-opt-name">Dark</span>
+      <i class="fa-solid fa-check theme-check"></i>
+    </div>
+    <div class="theme-opt" id="topt-greenish" onclick="setTheme('greenish')">
+      <span class="theme-swatch" style="background:linear-gradient(135deg,#10b981,#34d399)"></span>
+      <span class="theme-opt-name">Greenish</span>
+      <i class="fa-solid fa-check theme-check"></i>
+    </div>
+    <div class="theme-opt" id="topt-bluish" onclick="setTheme('bluish')">
+      <span class="theme-swatch" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8)"></span>
+      <span class="theme-opt-name">Bluish</span>
+      <i class="fa-solid fa-check theme-check"></i>
+    </div>
+    <div class="theme-opt" id="topt-purplish" onclick="setTheme('purplish')">
+      <span class="theme-swatch" style="background:linear-gradient(135deg,#a855f7,#c084fc)"></span>
+      <span class="theme-opt-name">Purplish</span>
+      <i class="fa-solid fa-check theme-check"></i>
+    </div>
+  </div>
+
+  </div> <!-- END appContainer -->
+
+  
+  <script src="js/api.js"></script>
+  <script src="js/script.js"></script>
+</body>
+
+</html>
