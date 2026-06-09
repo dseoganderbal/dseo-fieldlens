@@ -1,4 +1,4 @@
-const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwTVGuPkANybxLv0nvjJxbruyje2x24zBGPvRX3fDPnBJmtdNGzYVKnYHrw-NDi9giR/exec";
+const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbylNeFfOQtmsbV8EikkIHCVevzSrIwUf2Pjv-HaeaoVIok3IS4paFbWT2cKcu7EJ_Qg/exec";
 
 window.google = window.google || {};
 window.google.script = window.google.script || {};
