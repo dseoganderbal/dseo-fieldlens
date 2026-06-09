@@ -88,19 +88,43 @@
                     if (!url) return '';
                     if (url.startsWith('data:image')) return url;
                     const match = url.match(/[-\w]{25,}/);
-                    if (match) return 'https://drive.google.com/thumbnail?id=' + match[0] + '&sz=w800&t=' + Date.now();
+                    if (match) return 'https://lh3.googleusercontent.com/d/' + match[0];
                     return url;
                 };
                 
+                const showLoader = (imgId) => {
+                    let imgEl = document.getElementById(imgId);
+                    if (!imgEl) return;
+                    let parent = imgEl.parentElement;
+                    let loader = parent.querySelector('.photo-loader-overlay');
+                    if (!loader) {
+                        loader = document.createElement('div');
+                        loader.className = 'photo-loader-overlay';
+                        loader.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                        loader.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.7);display:flex;justify-content:center;align-items:center;font-size:24px;color:var(--primary);z-index:5;border-radius:12px;';
+                        parent.appendChild(loader);
+                    }
+                    loader.style.display = 'flex';
+                };
+
+                const hideLoader = (imgId) => {
+                    let imgEl = document.getElementById(imgId);
+                    if (imgEl && imgEl.parentElement.querySelector('.photo-loader-overlay')) {
+                        imgEl.parentElement.querySelector('.photo-loader-overlay').style.display = 'none';
+                    }
+                };
+
                 const processVerifiedPhotos = (photos) => {
                     if (photos && photos[0]) {
                         document.getElementById("photoImg1").dataset.driveUrl = photos[0];
                         document.getElementById("photoImg1").dataset.isNew = "false";
-                        google.script.run.withSuccessHandler(b64 => {
-                            document.getElementById("photoImg1").src = b64 || getThumbUrl(photos[0]);
-                            document.getElementById("photoPreview1").style.display = "block";
-                            document.getElementById("photoPlaceholder1").style.display = "none";
-                        }).getDriveImageBase64(photos[0]);
+                        document.getElementById("photoPreview1").style.display = "block";
+                        document.getElementById("photoPlaceholder1").style.display = "none";
+                        showLoader("photoImg1");
+                        let img1 = document.getElementById("photoImg1");
+                        img1.onload = () => hideLoader("photoImg1");
+                        img1.onerror = () => hideLoader("photoImg1");
+                        img1.src = getThumbUrl(photos[0]);
                     } else {
                         removePhoto(1);
                     }
@@ -108,11 +132,13 @@
                     if (photos && photos[1]) {
                         document.getElementById("photoImg2").dataset.driveUrl = photos[1];
                         document.getElementById("photoImg2").dataset.isNew = "false";
-                        google.script.run.withSuccessHandler(b64 => {
-                            document.getElementById("photoImg2").src = b64 || getThumbUrl(photos[1]);
-                            document.getElementById("photoPreview2").style.display = "block";
-                            document.getElementById("photoPlaceholder2").style.display = "none";
-                        }).getDriveImageBase64(photos[1]);
+                        document.getElementById("photoPreview2").style.display = "block";
+                        document.getElementById("photoPlaceholder2").style.display = "none";
+                        showLoader("photoImg2");
+                        let img2 = document.getElementById("photoImg2");
+                        img2.onload = () => hideLoader("photoImg2");
+                        img2.onerror = () => hideLoader("photoImg2");
+                        img2.src = getThumbUrl(photos[1]);
                     } else {
                         removePhoto(2);
                     }
