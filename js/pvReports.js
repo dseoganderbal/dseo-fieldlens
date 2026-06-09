@@ -5,6 +5,7 @@
 
         google.script.run
             .withSuccessHandler(function (data) {
+                if (!document.getElementById('pvrTableBody')) return;
                 if (!Array.isArray(data)) {
                     pvReportsData = [];
                     pvrFiltered = [];
@@ -20,6 +21,8 @@
                 pvrFilterAndRender();
             })
             .withFailureHandler(function (err) {
+                if (!document.getElementById('pvrTableBody')) return;
+                const tb = document.getElementById('pvrTableBody');
                 if (tb) tb.innerHTML = `<tr><td colspan="7" class="center" style="color:red;padding:20px;">Failed to load.</td></tr>`;
             })
             .getWorksData(sessionStorage.getItem("cdf_auth_token"), year);

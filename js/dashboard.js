@@ -15,11 +15,13 @@
 
         google.script.run
             .withSuccessHandler(function (data) {
+                if (!document.getElementById('totalWorks')) return;
                 if (!Array.isArray(data)) { data = []; }
                 dashboardWorks = data.filter(w => pvYear === 'All' || !pvYear || w.pvyear === pvYear);
                 renderDashboardAggregates(dashboardWorks);
             })
             .withFailureHandler(function (error) {
+                if (!document.getElementById('totalWorks')) return;
                 console.error("Failed to load dashboard data", error);
                 showCustomAlert('Notice', "Failed to load dashboard data. Please try again.");
                 document.getElementById('totalWorks').innerHTML = '0';

@@ -28,43 +28,28 @@
 
         google.script.run
             .withSuccessHandler(function (data) {
-
-                // console.log("SUCCESS");
-                // console.log(JSON.stringify(data));
-                // console.log(typeof data);
-                // console.log(Array.isArray(data));
-
+                if (!document.getElementById('wlTableBody')) return;
                 if (!Array.isArray(data)) {
-
                     console.error("Invalid data returned");
-
                     worksData = [];
                     wlFiltered = [];
-
                 } else {
-
                     worksData = data;
                     wlFiltered = [...worksData];
-
                 }
-
                 wlCurrentPage = 1;
-
                 wlRender();
-
             })
             .withFailureHandler(function (error) {
-
+                if (!document.getElementById('wlTableBody')) return;
                 console.error("FAILED");
                 console.error(error);
-
                 document.getElementById('wlTableBody').innerHTML =
                     `<tr>
                     <td colspan="7" style="text-align:center;color:red;padding:20px;">
                         Failed to load data
                     </td>
                 </tr>`;
-
             })
             .getWorksData(sessionStorage.getItem("cdf_auth_token"), year);
     }
@@ -310,20 +295,24 @@
 
         const processWorksPhotos = (photos) => {
             if (photos && photos[0]) {
-                document.getElementById("wd_photoImg1").src = getThumbUrl(photos[0]);
                 document.getElementById("wd_photoImg1").dataset.driveUrl = photos[0];
-                document.getElementById("wd_photoPreview1").style.display = "block";
-                document.getElementById("wd_photoPlaceholder1").style.display = "none";
+                google.script.run.withSuccessHandler(b64 => {
+                    document.getElementById("wd_photoImg1").src = b64 || getThumbUrl(photos[0]);
+                    document.getElementById("wd_photoPreview1").style.display = "block";
+                    document.getElementById("wd_photoPlaceholder1").style.display = "none";
+                }).getDriveImageBase64(photos[0]);
             } else {
                 document.getElementById("wd_photoImg1").src = "";
                 document.getElementById("wd_photoPreview1").style.display = "none";
                 document.getElementById("wd_photoPlaceholder1").style.display = "flex";
             }
             if (photos && photos[1]) {
-                document.getElementById("wd_photoImg2").src = getThumbUrl(photos[1]);
                 document.getElementById("wd_photoImg2").dataset.driveUrl = photos[1];
-                document.getElementById("wd_photoPreview2").style.display = "block";
-                document.getElementById("wd_photoPlaceholder2").style.display = "none";
+                google.script.run.withSuccessHandler(b64 => {
+                    document.getElementById("wd_photoImg2").src = b64 || getThumbUrl(photos[1]);
+                    document.getElementById("wd_photoPreview2").style.display = "block";
+                    document.getElementById("wd_photoPlaceholder2").style.display = "none";
+                }).getDriveImageBase64(photos[1]);
             } else {
                 document.getElementById("wd_photoImg2").src = "";
                 document.getElementById("wd_photoPreview2").style.display = "none";

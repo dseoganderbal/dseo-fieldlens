@@ -94,19 +94,25 @@
                 
                 const processVerifiedPhotos = (photos) => {
                     if (photos && photos[0]) {
-                        document.getElementById("photoImg1").src = getThumbUrl(photos[0]);
                         document.getElementById("photoImg1").dataset.driveUrl = photos[0];
-                        document.getElementById("photoPreview1").style.display = "block";
-                        document.getElementById("photoPlaceholder1").style.display = "none";
+                        document.getElementById("photoImg1").dataset.isNew = "false";
+                        google.script.run.withSuccessHandler(b64 => {
+                            document.getElementById("photoImg1").src = b64 || getThumbUrl(photos[0]);
+                            document.getElementById("photoPreview1").style.display = "block";
+                            document.getElementById("photoPlaceholder1").style.display = "none";
+                        }).getDriveImageBase64(photos[0]);
                     } else {
                         removePhoto(1);
                     }
 
                     if (photos && photos[1]) {
-                        document.getElementById("photoImg2").src = getThumbUrl(photos[1]);
                         document.getElementById("photoImg2").dataset.driveUrl = photos[1];
-                        document.getElementById("photoPreview2").style.display = "block";
-                        document.getElementById("photoPlaceholder2").style.display = "none";
+                        document.getElementById("photoImg2").dataset.isNew = "false";
+                        google.script.run.withSuccessHandler(b64 => {
+                            document.getElementById("photoImg2").src = b64 || getThumbUrl(photos[1]);
+                            document.getElementById("photoPreview2").style.display = "block";
+                            document.getElementById("photoPlaceholder2").style.display = "none";
+                        }).getDriveImageBase64(photos[1]);
                     } else {
                         removePhoto(2);
                     }
@@ -225,21 +231,22 @@
         payload.status = 'In Progress';
 
         const files = {};
-        let p1 = document.getElementById("photoImg1").src;
-        if (p1 && p1.startsWith("data:image")) {
+        let img1El = document.getElementById("photoImg1");
+        let p1 = img1El.src;
+        if (img1El.dataset.isNew === "true" && p1 && p1.startsWith("data:image")) {
             files.photo1 = p1;
         } else if (p1 && p1 !== window.location.href) {
-            // Unchanged existing image
-            files.photo1 = document.getElementById("photoImg1").dataset.driveUrl || p1;
+            files.photo1 = img1El.dataset.driveUrl || p1;
         } else {
             files.photo1 = '';
         }
 
-        let p2 = document.getElementById("photoImg2").src;
-        if (p2 && p2.startsWith("data:image")) {
+        let img2El = document.getElementById("photoImg2");
+        let p2 = img2El.src;
+        if (img2El.dataset.isNew === "true" && p2 && p2.startsWith("data:image")) {
             files.photo2 = p2;
         } else if (p2 && p2 !== window.location.href) {
-            files.photo2 = document.getElementById("photoImg2").dataset.driveUrl || p2;
+            files.photo2 = img2El.dataset.driveUrl || p2;
         } else {
             files.photo2 = '';
         }
@@ -442,7 +449,9 @@
                 ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetWidth, targetHeight);
 
                 const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
-                document.getElementById(`${prefix}photoImg${n}`).src = dataUrl;
+                const imgEl = document.getElementById(`${prefix}photoImg${n}`);
+                imgEl.src = dataUrl;
+                imgEl.dataset.isNew = "true";
                 document.getElementById(`${prefix}photoPreview${n}`).style.display = 'block';
                 document.getElementById(`${prefix}photoPlaceholder${n}`).style.display = 'none';
             };
@@ -456,6 +465,7 @@
         if (imgEl) {
             imgEl.src = '';
             delete imgEl.dataset.driveUrl;
+            delete imgEl.dataset.isNew;
         }
         document.getElementById(`${prefix}photoPreview${n}`).style.display = 'none';
         document.getElementById(`${prefix}photoPlaceholder${n}`).style.display = 'flex';

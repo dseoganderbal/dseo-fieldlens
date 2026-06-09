@@ -350,19 +350,25 @@
 
                 const processEditPhotos = (photos) => {
                     if (photos && photos[0]) {
-                        document.getElementById("ue_photoImg1").src = getThumbUrl(photos[0]);
                         document.getElementById("ue_photoImg1").dataset.driveUrl = photos[0];
-                        document.getElementById("ue_photoPreview1").style.display = "block";
-                        document.getElementById("ue_photoPlaceholder1").style.display = "none";
+                        document.getElementById("ue_photoImg1").dataset.isNew = "false";
+                        google.script.run.withSuccessHandler(b64 => {
+                            document.getElementById("ue_photoImg1").src = b64 || getThumbUrl(photos[0]);
+                            document.getElementById("ue_photoPreview1").style.display = "block";
+                            document.getElementById("ue_photoPlaceholder1").style.display = "none";
+                        }).getDriveImageBase64(photos[0]);
                     } else {
                         removePhoto(1, "ue_");
                     }
 
                     if (photos && photos[1]) {
-                        document.getElementById("ue_photoImg2").src = getThumbUrl(photos[1]);
                         document.getElementById("ue_photoImg2").dataset.driveUrl = photos[1];
-                        document.getElementById("ue_photoPreview2").style.display = "block";
-                        document.getElementById("ue_photoPlaceholder2").style.display = "none";
+                        document.getElementById("ue_photoImg2").dataset.isNew = "false";
+                        google.script.run.withSuccessHandler(b64 => {
+                            document.getElementById("ue_photoImg2").src = b64 || getThumbUrl(photos[1]);
+                            document.getElementById("ue_photoPreview2").style.display = "block";
+                            document.getElementById("ue_photoPlaceholder2").style.display = "none";
+                        }).getDriveImageBase64(photos[1]);
                     } else {
                         removePhoto(2, "ue_");
                     }
@@ -441,20 +447,22 @@
         let fileDataObj = { doc: null, docName: null, photos: [] };
         let pendingFiles = 0;
 
-        let p1 = document.getElementById('ue_photoImg1').src;
-        if (p1 && p1.startsWith("data:image")) {
+        let img1El = document.getElementById('ue_photoImg1');
+        let p1 = img1El.src;
+        if (img1El.dataset.isNew === "true" && p1 && p1.startsWith("data:image")) {
             fileDataObj.photo1 = p1;
         } else if (p1 && p1 !== window.location.href) {
-            fileDataObj.photo1 = document.getElementById("ue_photoImg1").dataset.driveUrl || p1;
+            fileDataObj.photo1 = img1El.dataset.driveUrl || p1;
         } else {
             fileDataObj.photo1 = '';
         }
 
-        let p2 = document.getElementById('ue_photoImg2').src;
-        if (p2 && p2.startsWith("data:image")) {
+        let img2El = document.getElementById('ue_photoImg2');
+        let p2 = img2El.src;
+        if (img2El.dataset.isNew === "true" && p2 && p2.startsWith("data:image")) {
             fileDataObj.photo2 = p2;
         } else if (p2 && p2 !== window.location.href) {
-            fileDataObj.photo2 = document.getElementById("ue_photoImg2").dataset.driveUrl || p2;
+            fileDataObj.photo2 = img2El.dataset.driveUrl || p2;
         } else {
             fileDataObj.photo2 = '';
         }
