@@ -98,7 +98,7 @@
                         <td style="font-size:12px;color:var(--text-secondary);">${w.constituency}</td>
                         <td><span class="wl-dept">${w.dept}</span></td>
                         <td><span class="wl-agency">${w.agency}</span></td>
-                        <td class="wl-cost">&#8377; ${w.cost.toFixed(2)}<br><span>Claim: &#8377; ${w.claim.toFixed(2)}</span></td>
+                        <td class="wl-cost">&#8377; ${w.cost || '0'}<br><span>Claim: &#8377; ${w.claim || '0'}</span></td>
                         <td style="text-align:center;">${wlBadge(w.status)}</td>
                         <td class="action-cell">
                             <button class="btn btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="openWorkDetails('${w.code}')"><i class="fa-solid fa-eye"></i></button>
@@ -241,11 +241,7 @@
         setText('wd_Agency', w.agency);
         const formatFin = (val) => {
             if (val === null || val === undefined || val === '') return null;
-            const strVal = String(val);
-            const num = parseFloat(strVal);
-            if (isNaN(num)) return null;
-            const decimals = strVal.includes('.') ? strVal.split('.')[1].length : 0;
-            return '\u20B9 ' + num.toFixed(Math.max(2, decimals));
+            return '\u20B9 ' + String(val);
         };
 
         setText('wd_AACost', formatFin(w.cost));

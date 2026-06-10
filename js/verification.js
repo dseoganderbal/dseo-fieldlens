@@ -41,9 +41,9 @@
                 document.getElementById('vfAgency').value = data.agency || '';
                 document.getElementById('vfBlock').value = data.block || '';
                 document.getElementById('vfLocation').value = data.location || '';
-                document.getElementById('vfAACost').value = '\u20B9 ' + parseFin(data.cost).toFixed(2);
-                document.getElementById('vfAllottedCost').value = '\u20B9 ' + parseFin(data.allotted).toFixed(2);
-                document.getElementById('vfClaim').value = '\u20B9 ' + parseFin(data.claim).toFixed(2);
+                document.getElementById('vfAACost').value = '\u20B9 ' + String(data.cost || '0');
+                document.getElementById('vfAllottedCost').value = '\u20B9 ' + String(data.allotted || '0');
+                document.getElementById('vfClaim').value = '\u20B9 ' + String(data.claim || '0');
                 document.getElementById('vfAdminApproval').value = data['position a/a'] || data['position aa'] || '';
 
                 fields.style.display = 'grid';

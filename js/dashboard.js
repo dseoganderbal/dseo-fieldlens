@@ -36,6 +36,12 @@
             })
             .getWorksData(sessionStorage.getItem("cdf_auth_token"), worksYear);
     }
+    
+    function displaySum(val) {
+        if (!val) return '0';
+        return String(Math.round(val * 100000) / 100000);
+    }
+
     function renderDashboardAggregates(works) {
         let total = works.length;
         let verified = 0;
@@ -49,24 +55,30 @@
         works.forEach(w => {
             const isVerified = (w.status === 'Completed');
             if (isVerified) verified++; else pending++;
-            totalClaim += (w.claim || 0);
+            
+            const parseVal = v => parseFloat(String(v || 0).replace(/,/g, '')) || 0;
+            const wCost = parseVal(w.cost);
+            const wAlloc = parseVal(w.allotted);
+            const wClaim = parseVal(w.claim);
+            
+            totalClaim += wClaim;
 
             // Constituency
             let c = w.constituency;
             if (c === 'Ganderbal' || c === 'Kangan') {
                 constStats[c].recv++;
-                constStats[c].aa += (w.cost || 0);
-                constStats[c].alloc += (w.allotted || 0);
-                constStats[c].claim += (w.claim || 0);
+                constStats[c].aa += wCost;
+                constStats[c].alloc += wAlloc;
+                constStats[c].claim += wClaim;
                 if (isVerified) {
                     constStats[c].ver++;
-                    constStats[c].ver_aa += (w.cost || 0);
-                    constStats[c].ver_alloc += (w.allotted || 0);
-                    constStats[c].ver_claim += (w.claim || 0);
+                    constStats[c].ver_aa += wCost;
+                    constStats[c].ver_alloc += wAlloc;
+                    constStats[c].ver_claim += wClaim;
                 } else {
-                    constStats[c].pend_aa += (w.cost || 0);
-                    constStats[c].pend_alloc += (w.allotted || 0);
-                    constStats[c].pend_claim += (w.claim || 0);
+                    constStats[c].pend_aa += wCost;
+                    constStats[c].pend_alloc += wAlloc;
+                    constStats[c].pend_claim += wClaim;
                 }
             }
 
@@ -93,7 +105,7 @@
         animateCount('totalWorks', total);
         animateCount('verifiedWorks', verified);
         animateCount('pendingWorks', pending);
-        document.getElementById('claimAmount').textContent = totalClaim.toFixed(2);
+        document.getElementById('claimAmount').textContent = displaySum(totalClaim);
 
         document.getElementById('totalWorksBar').style.width = '100%';
         document.getElementById('verifiedWorksBar').style.width = pct + '%';
@@ -127,10 +139,10 @@
         let cTotalRecv = 0, cTotalAA = 0, cTotalVer = 0;
         ['Ganderbal', 'Kangan'].forEach(c => {
             let st = constStats[c];
-            cHtml += `<tr><td>${sno++}</td><td class="text-left">${c}</td><td>${st.recv}</td><td>${st.aa.toFixed(2)}</td><td>${st.ver}</td><td>${st.ver}</td></tr>`;
+            cHtml += `<tr><td>${sno++}</td><td class="text-left">${c}</td><td>${st.recv}</td><td>${displaySum(st.aa)}</td><td>${st.ver}</td><td>${st.ver}</td></tr>`;
             cTotalRecv += st.recv; cTotalAA += st.aa; cTotalVer += st.ver;
         });
-        cHtml += `<tr class="total-row"><td></td><td class="text-left">Total</td><td>${cTotalRecv}</td><td>${cTotalAA.toFixed(2)}</td><td>${cTotalVer}</td><td>${cTotalVer}</td></tr>`;
+        cHtml += `<tr class="total-row"><td></td><td class="text-left">Total</td><td>${cTotalRecv}</td><td>${displaySum(cTotalAA)}</td><td>${cTotalVer}</td><td>${cTotalVer}</td></tr>`;
         document.getElementById('constituencyTableBody').innerHTML = cHtml;
 
         // Financial Table
@@ -139,21 +151,21 @@
         let fVerAA = 0, fVerAlloc = 0, fVerClaim = 0, fVerCount = 0;
         ['Ganderbal', 'Kangan'].forEach((c, idx) => {
             let st = constStats[c];
-            fHtml += `<tr><td>${idx + 1}</td><td class="text-left">${c}</td><td>${st.ver}</td><td>${st.ver_aa.toFixed(3)}</td><td>${st.ver_alloc.toFixed(3)}</td><td>${st.ver_claim.toFixed(3)}</td></tr>`;
+            fHtml += `<tr><td>${idx + 1}</td><td class="text-left">${c}</td><td>${st.ver}</td><td>${displaySum(st.ver_aa)}</td><td>${displaySum(st.ver_alloc)}</td><td>${displaySum(st.ver_claim)}</td></tr>`;
             fVerCount += st.ver; fVerAA += st.ver_aa; fVerAlloc += st.ver_alloc; fVerClaim += st.ver_claim;
         });
-        fHtml += `<tr class="subtotal-row"><td></td><td class="text-left">Sub Total</td><td>${fVerCount}</td><td>${fVerAA.toFixed(3)}</td><td>${fVerAlloc.toFixed(3)}</td><td>${fVerClaim.toFixed(3)}</td></tr>`;
+        fHtml += `<tr class="subtotal-row"><td></td><td class="text-left">Sub Total</td><td>${fVerCount}</td><td>${displaySum(fVerAA)}</td><td>${displaySum(fVerAlloc)}</td><td>${displaySum(fVerClaim)}</td></tr>`;
 
         fHtml += `<tr class="sub-header-row"><th colspan="6">  Verification Under Progress</th></tr>`;
         let fPendAA = 0, fPendAlloc = 0, fPendClaim = 0, fPendCount = 0;
         ['Ganderbal', 'Kangan'].forEach((c, idx) => {
             let st = constStats[c];
             let pendCount = st.recv - st.ver;
-            fHtml += `<tr><td>${idx + 1}</td><td class="text-left">${c}</td><td>${pendCount}</td><td>${st.pend_aa.toFixed(3)}</td><td>${st.pend_alloc.toFixed(3)}</td><td>${st.pend_claim.toFixed(3)}</td></tr>`;
+            fHtml += `<tr><td>${idx + 1}</td><td class="text-left">${c}</td><td>${pendCount}</td><td>${displaySum(st.pend_aa)}</td><td>${displaySum(st.pend_alloc)}</td><td>${displaySum(st.pend_claim)}</td></tr>`;
             fPendCount += pendCount; fPendAA += st.pend_aa; fPendAlloc += st.pend_alloc; fPendClaim += st.pend_claim;
         });
-        fHtml += `<tr class="subtotal-row"><td></td><td class="text-left">Sub Total</td><td>${fPendCount}</td><td>${fPendAA.toFixed(3)}</td><td>${fPendAlloc.toFixed(3)}</td><td>${fPendClaim.toFixed(3)}</td></tr>`;
-        fHtml += `<tr class="total-row"><td></td><td class="text-left">Grand Total</td><td>${fVerCount + fPendCount}</td><td>${(fVerAA + fPendAA).toFixed(3)}</td><td>${(fVerAlloc + fPendAlloc).toFixed(3)}</td><td>${(fVerClaim + fPendClaim).toFixed(3)}</td></tr>`;
+        fHtml += `<tr class="subtotal-row"><td></td><td class="text-left">Sub Total</td><td>${fPendCount}</td><td>${displaySum(fPendAA)}</td><td>${displaySum(fPendAlloc)}</td><td>${displaySum(fPendClaim)}</td></tr>`;
+        fHtml += `<tr class="total-row"><td></td><td class="text-left">Grand Total</td><td>${fVerCount + fPendCount}</td><td>${displaySum(fVerAA + fPendAA)}</td><td>${displaySum(fVerAlloc + fPendAlloc)}</td><td>${displaySum(fVerClaim + fPendClaim)}</td></tr>`;
         document.getElementById('financialTableBody').innerHTML = fHtml;
 
         // Block Table
