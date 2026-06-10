@@ -444,25 +444,48 @@
             document.getElementById('pdfTemplateWrapper').style.left = '0';
             document.getElementById('pdfTemplateWrapper').style.zIndex = '-9999';
 
+            const filename = `${workcode}_Verification_Report.pdf`;
             const opt = {
                 margin:       [0.5, 0.3],
-                filename:     `${workcode}_Verification_Report.pdf`,
+                filename:     filename,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollX: 0, scrollY: 0, x: 0, y: 0, windowWidth: 750 },
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(opt).from(element).save().then(() => {
-                btn.innerHTML = ogText;
-                btn.disabled = false;
-                document.getElementById('pdfTemplateWrapper').style.left = '-9999px';
-            }).catch(err => {
-                console.error('PDF generation error', err);
-                showCustomAlert('Notice', 'Failed to generate PDF. Check console for details.');
-                btn.innerHTML = ogText;
-                btn.disabled = false;
-                document.getElementById('pdfTemplateWrapper').style.left = '-9999px';
-            });
+            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                html2pdf().set(opt).from(element).output('datauristring').then(function(pdfAsString) {
+                    const base64Data = pdfAsString.split(',')[1];
+                    return window.Capacitor.Plugins.Filesystem.writeFile({
+                        path: filename,
+                        data: base64Data,
+                        directory: 'DOCUMENTS'
+                    });
+                }).then(() => {
+                    showCustomAlert('Success', 'PDF downloaded to your Documents folder.', false, null, 'success');
+                    btn.innerHTML = ogText;
+                    btn.disabled = false;
+                    document.getElementById('pdfTemplateWrapper').style.left = '-9999px';
+                }).catch(err => {
+                    console.error('PDF generation error', err);
+                    showCustomAlert('Notice', 'Failed to generate/save PDF natively. Check console for details.', false, null, 'error');
+                    btn.innerHTML = ogText;
+                    btn.disabled = false;
+                    document.getElementById('pdfTemplateWrapper').style.left = '-9999px';
+                });
+            } else {
+                html2pdf().set(opt).from(element).save().then(() => {
+                    btn.innerHTML = ogText;
+                    btn.disabled = false;
+                    document.getElementById('pdfTemplateWrapper').style.left = '-9999px';
+                }).catch(err => {
+                    console.error('PDF generation error', err);
+                    showCustomAlert('Notice', 'Failed to generate PDF. Check console for details.', false, null, 'error');
+                    btn.innerHTML = ogText;
+                    btn.disabled = false;
+                    document.getElementById('pdfTemplateWrapper').style.left = '-9999px';
+                });
+            }
         });
     }
     function initGeo() {
@@ -482,22 +505,70 @@
         const file = event.target.files[0];
         if (!file) return;
 
-        if (file.size > 500 * 1024) {
-            showCustomAlert('Alert', 'Image size cannot exceed 500 KB.');
-            event.target.value = '';
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = e => {
-            const dataUrl = e.target.result;
+        const processAndSet = (dataUrl) => {
             const imgEl = document.getElementById(`${prefix}photoImg${n}`);
             imgEl.src = dataUrl;
             imgEl.dataset.isNew = "true";
             document.getElementById(`${prefix}photoPreview${n}`).style.display = 'block';
             document.getElementById(`${prefix}photoPlaceholder${n}`).style.display = 'none';
+            event.target.value = ''; // clear input
         };
-        reader.readAsDataURL(file);
+
+        if (file.size > 500 * 1024) {
+            showCustomAlert('Notice', 'Image size is more than 500KB. Compressing the image...', false, null, 'info');
+
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 1920;
+                    const MAX_HEIGHT = 1440;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    let quality = 0.8;
+                    let dataUrl = canvas.toDataURL('image/jpeg', quality);
+
+                    while (dataUrl.length * 0.75 > 500 * 1024 && quality > 0.1) {
+                        quality -= 0.1;
+                        dataUrl = canvas.toDataURL('image/jpeg', quality);
+                    }
+
+                    processAndSet(dataUrl);
+                    setTimeout(closeCustomAlert, 800);
+                };
+                img.onerror = () => {
+                    showCustomAlert('Alert', 'Failed to process image.', false, null, 'error');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            const reader = new FileReader();
+            reader.onload = e => processAndSet(e.target.result);
+            reader.onerror = () => {
+                showCustomAlert('Alert', 'Failed to read image.', false, null, 'error');
+            };
+            reader.readAsDataURL(file);
+        }
     }
     function removePhoto(n, prefix) {
         prefix = prefix || '';
