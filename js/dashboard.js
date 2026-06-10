@@ -38,8 +38,8 @@
     }
     
     function displaySum(val) {
-        if (!val) return '0';
-        return String(Math.round(val * 100000) / 100000);
+        if (!val) return '0.00';
+        return parseFloat(val).toFixed(2);
     }
 
     function renderDashboardAggregates(works) {
