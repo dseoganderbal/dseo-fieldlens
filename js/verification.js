@@ -12,8 +12,8 @@
 
         // Clear existing images and fields before fetching
         if (typeof removePhoto === 'function') {
-            removePhoto(1, 'vf_');
-            removePhoto(2, 'vf_');
+            removePhoto(1);
+            removePhoto(2);
         }
         const textFields = ['vfDateReceipt', 'vfWorkName', 'vfConstituency', 'vfDept', 'vfAgency', 'vfBlock', 'vfLocation', 'vfAACost', 'vfAllottedCost', 'vfClaim', 'vfAdminApproval', 'vfDateVisit', 'vfRemarks', 'vfLeftOut', 'vfCompletionStatus', 'vfSignboard', 'vfQuality'];
         textFields.forEach(id => {
@@ -21,6 +21,11 @@
             if (el) el.value = '';
         });
         document.getElementById('vfWorkDocument').innerHTML = '';
+
+        // Relock sections 2, 3, 4 and actions during fetch
+        ['vfSection2', 'vfSectionDoc', 'vfSection3', 'vfActionsWrap'].forEach(id => {
+            document.getElementById(id).classList.add('vf-locked');
+        });
 
         document.getElementById('vfWorkcode').disabled = true;
         const btn = document.querySelector('.vf-lookup-bar .btn-primary');
@@ -127,6 +132,9 @@
                 };
 
                 const processVerifiedPhotos = (photos) => {
+                    const sectionLoader = document.getElementById('vfPhotoSectionLoader');
+                    if (sectionLoader) sectionLoader.remove();
+
                     if (photos && photos[0]) {
                         document.getElementById("photoImg1").dataset.driveUrl = photos[0];
                         document.getElementById("photoImg1").dataset.isNew = "false";
@@ -155,6 +163,16 @@
                         removePhoto(2);
                     }
                 };
+
+                const photoBody = document.querySelector('#vfSection3 .vf-section-body');
+                if (photoBody) {
+                    photoBody.style.position = 'relative';
+                    const photoLoader = document.createElement('div');
+                    photoLoader.id = 'vfPhotoSectionLoader';
+                    photoLoader.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>&nbsp; Fetching site photos...';
+                    photoLoader.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.85);display:flex;justify-content:center;align-items:center;font-size:16px;font-weight:600;color:var(--primary);z-index:10;border-radius:8px;';
+                    photoBody.appendChild(photoLoader);
+                }
 
                 google.script.run
                     .withSuccessHandler(processVerifiedPhotos)

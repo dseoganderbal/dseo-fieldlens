@@ -384,6 +384,9 @@
                 };
 
                 const processEditPhotos = (photos) => {
+                    const sectionLoader = document.getElementById('uePhotoSectionLoader');
+                    if (sectionLoader) sectionLoader.remove();
+
                     if (photos && photos[0]) {
                         document.getElementById("ue_photoImg1").dataset.driveUrl = photos[0];
                         document.getElementById("ue_photoImg1").dataset.isNew = "false";
@@ -412,6 +415,16 @@
                         removePhoto(2, "ue_");
                     }
                 };
+
+                const uePhotosWrap = document.getElementById('ue_PhotosWrap');
+                if (uePhotosWrap) {
+                    uePhotosWrap.style.position = 'relative';
+                    const photoLoader = document.createElement('div');
+                    photoLoader.id = 'uePhotoSectionLoader';
+                    photoLoader.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>&nbsp; Fetching site photos...';
+                    photoLoader.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.85);display:flex;justify-content:center;align-items:center;font-size:16px;font-weight:600;color:var(--primary);z-index:10;border-radius:8px;';
+                    uePhotosWrap.appendChild(photoLoader);
+                }
 
                 google.script.run
                     .withSuccessHandler(processEditPhotos)
