@@ -384,15 +384,9 @@
                 };
 
                 const processEditPhotos = (photos) => {
-                    const sectionLoader = document.getElementById('uePhotoSectionLoader');
-                    if (sectionLoader) sectionLoader.remove();
-
                     if (photos && photos[0]) {
                         document.getElementById("ue_photoImg1").dataset.driveUrl = photos[0];
                         document.getElementById("ue_photoImg1").dataset.isNew = "false";
-                        document.getElementById("ue_photoPreview1").style.display = "block";
-                        document.getElementById("ue_photoPlaceholder1").style.display = "none";
-                        showLoader("ue_photoImg1");
                         let img1 = document.getElementById("ue_photoImg1");
                         img1.onload = () => hideLoader("ue_photoImg1");
                         img1.onerror = () => hideLoader("ue_photoImg1");
@@ -404,9 +398,6 @@
                     if (photos && photos[1]) {
                         document.getElementById("ue_photoImg2").dataset.driveUrl = photos[1];
                         document.getElementById("ue_photoImg2").dataset.isNew = "false";
-                        document.getElementById("ue_photoPreview2").style.display = "block";
-                        document.getElementById("ue_photoPlaceholder2").style.display = "none";
-                        showLoader("ue_photoImg2");
                         let img2 = document.getElementById("ue_photoImg2");
                         img2.onload = () => hideLoader("ue_photoImg2");
                         img2.onerror = () => hideLoader("ue_photoImg2");
@@ -415,16 +406,14 @@
                         removePhoto(2, "ue_");
                     }
                 };
+                // Start individual loaders immediately while fetching
+                document.getElementById("ue_photoPreview1").style.display = "block";
+                document.getElementById("ue_photoPlaceholder1").style.display = "none";
+                showLoader("ue_photoImg1");
 
-                const uePhotosWrap = document.getElementById('ue_PhotosWrap');
-                if (uePhotosWrap) {
-                    uePhotosWrap.style.position = 'relative';
-                    const photoLoader = document.createElement('div');
-                    photoLoader.id = 'uePhotoSectionLoader';
-                    photoLoader.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>&nbsp; Fetching site photos...';
-                    photoLoader.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:var(--bg-card);display:flex;justify-content:center;align-items:center;font-size:16px;font-weight:600;color:var(--accent);z-index:10;border-radius:8px;';
-                    uePhotosWrap.appendChild(photoLoader);
-                }
+                document.getElementById("ue_photoPreview2").style.display = "block";
+                document.getElementById("ue_photoPlaceholder2").style.display = "none";
+                showLoader("ue_photoImg2");
 
                 google.script.run
                     .withSuccessHandler(processEditPhotos)

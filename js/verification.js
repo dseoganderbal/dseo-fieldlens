@@ -132,15 +132,9 @@
                 };
 
                 const processVerifiedPhotos = (photos) => {
-                    const sectionLoader = document.getElementById('vfPhotoSectionLoader');
-                    if (sectionLoader) sectionLoader.remove();
-
                     if (photos && photos[0]) {
                         document.getElementById("photoImg1").dataset.driveUrl = photos[0];
                         document.getElementById("photoImg1").dataset.isNew = "false";
-                        document.getElementById("photoPreview1").style.display = "block";
-                        document.getElementById("photoPlaceholder1").style.display = "none";
-                        showLoader("photoImg1");
                         let img1 = document.getElementById("photoImg1");
                         img1.onload = () => hideLoader("photoImg1");
                         img1.onerror = () => hideLoader("photoImg1");
@@ -152,9 +146,6 @@
                     if (photos && photos[1]) {
                         document.getElementById("photoImg2").dataset.driveUrl = photos[1];
                         document.getElementById("photoImg2").dataset.isNew = "false";
-                        document.getElementById("photoPreview2").style.display = "block";
-                        document.getElementById("photoPlaceholder2").style.display = "none";
-                        showLoader("photoImg2");
                         let img2 = document.getElementById("photoImg2");
                         img2.onload = () => hideLoader("photoImg2");
                         img2.onerror = () => hideLoader("photoImg2");
@@ -163,16 +154,14 @@
                         removePhoto(2);
                     }
                 };
+                // Start individual loaders immediately while fetching
+                document.getElementById("photoPreview1").style.display = "block";
+                document.getElementById("photoPlaceholder1").style.display = "none";
+                showLoader("photoImg1");
 
-                const photoBody = document.querySelector('#vfSection3 .vf-section-body');
-                if (photoBody) {
-                    photoBody.style.position = 'relative';
-                    const photoLoader = document.createElement('div');
-                    photoLoader.id = 'vfPhotoSectionLoader';
-                    photoLoader.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>&nbsp; Fetching site photos...';
-                    photoLoader.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:var(--bg-card);display:flex;justify-content:center;align-items:center;font-size:16px;font-weight:600;color:var(--accent);z-index:10;border-radius:8px;';
-                    photoBody.appendChild(photoLoader);
-                }
+                document.getElementById("photoPreview2").style.display = "block";
+                document.getElementById("photoPlaceholder2").style.display = "none";
+                showLoader("photoImg2");
 
                 google.script.run
                     .withSuccessHandler(processVerifiedPhotos)
