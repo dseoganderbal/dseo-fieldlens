@@ -245,6 +245,19 @@
 
         document.getElementById('ue_WorkCode').value = code;
 
+        // Clear existing fields and photos to prevent showing previous work's data while fetching
+        const ueFields = ['ue_ReceiptDate', 'ue_NameOfWork', 'ue_WorksYear', 'ue_PVYear', 'ue_Constituency', 'ue_Block', 'ue_Location', 'ue_Department', 'ue_Agency', 'ue_AACost', 'ue_Allotted', 'ue_Claim', 'ue_Status', 'ue_PositionAA', 'ue_CompletionStatus', 'ue_LeftOut', 'ue_Signboard', 'ue_Quality', 'ue_VerifyRemarks', 'ue_DateVisit', 'ue_SubmissionDate', 'ue_GeoCoords', 'ue_Remarks'];
+        ueFields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        const currentDocLink = document.getElementById('ue_CurrentDocLink');
+        if (currentDocLink) currentDocLink.innerHTML = '';
+        if (typeof removePhoto === 'function') {
+            removePhoto(1, 'ue_');
+            removePhoto(2, 'ue_');
+        }
+
         document.getElementById('btnUpdateUnified').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
         document.getElementById('btnUpdateUnified').disabled = true;
 

@@ -10,6 +10,18 @@
 
         if (!code) return;
 
+        // Clear existing images and fields before fetching
+        if (typeof removePhoto === 'function') {
+            removePhoto(1, 'vf_');
+            removePhoto(2, 'vf_');
+        }
+        const textFields = ['vfDateReceipt', 'vfWorkName', 'vfConstituency', 'vfDept', 'vfAgency', 'vfBlock', 'vfLocation', 'vfAACost', 'vfAllottedCost', 'vfClaim', 'vfAdminApproval', 'vfDateVisit', 'vfRemarks', 'vfLeftOut', 'vfCompletionStatus', 'vfSignboard', 'vfQuality'];
+        textFields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        document.getElementById('vfWorkDocument').innerHTML = '';
+
         document.getElementById('vfWorkcode').disabled = true;
         const btn = document.querySelector('.vf-lookup-bar .btn-primary');
         const origBtnHtml = btn.innerHTML;
