@@ -46,6 +46,7 @@
         let total = works.length;
         let verified = 0;
         let pending = 0;
+        let inProgress = 0;
         let totalClaim = 0.0;
 
         let constStats = { 'Ganderbal': { recv: 0, aa: 0, ver: 0, claim: 0, alloc: 0, ver_aa: 0, ver_alloc: 0, ver_claim: 0, pend_aa: 0, pend_alloc: 0, pend_claim: 0 }, 'Kangan': { recv: 0, aa: 0, ver: 0, claim: 0, alloc: 0, ver_aa: 0, ver_alloc: 0, ver_claim: 0, pend_aa: 0, pend_alloc: 0, pend_claim: 0 } };
@@ -55,6 +56,8 @@
         works.forEach(w => {
             const isVerified = (w.status === 'Completed');
             if (isVerified) verified++; else pending++;
+            
+            if (w.status === 'In Progress') inProgress++;
             
             const parseVal = v => parseFloat(String(v || 0).replace(/,/g, '')) || 0;
             const wCost = parseVal(w.cost);
@@ -105,11 +108,14 @@
         animateCount('totalWorks', total);
         animateCount('verifiedWorks', verified);
         animateCount('pendingWorks', pending);
+        animateCount('inspectionWorks', inProgress);
         document.getElementById('claimAmount').textContent = displaySum(totalClaim);
 
         document.getElementById('totalWorksBar').style.width = '100%';
         document.getElementById('verifiedWorksBar').style.width = pct + '%';
         document.getElementById('pendingWorksBar').style.width = (100 - pct) + '%';
+        let progPct = total === 0 ? 0 : Math.round((inProgress / total) * 100);
+        document.getElementById('inspectionWorksBar').style.width = progPct + '%';
 
         // Update Donut & Progress bars
         document.getElementById('donutPercentText').textContent = pct + '%';
