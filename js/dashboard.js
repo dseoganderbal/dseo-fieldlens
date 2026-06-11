@@ -105,9 +105,10 @@
             // Dept
             let d = w.dept;
             if (d) {
-                if (!deptStats[d]) deptStats[d] = { recv: 0, ver: 0, pend: 0 };
+                if (!deptStats[d]) deptStats[d] = { recv: 0, ver: 0, pend: 0, inProg: 0 };
                 deptStats[d].recv++;
                 if (isVerified) deptStats[d].ver++; else deptStats[d].pend++;
+                if (w.status === 'In Progress') deptStats[d].inProg++;
             }
         });
 
@@ -189,30 +190,30 @@
         let bTotalRecv = 0, bTotalVer = 0, bTotalPend = 0, bTotalInProg = 0;
         Object.keys(blockStats).forEach(b => {
             let st = blockStats[b];
-            bHtml += `<tr><td>${sno++}</td><td class="text-left">${b}</td><td>${st.recv}</td><td>${st.ver}</td><td><span class="${st.pend > 0 ? 'highlight-cell' : ''}">${st.pend}</span></td><td>${st.ver}</td><td>${st.inProg}</td></tr>`;
+            bHtml += `<tr><td>${sno++}</td><td class="text-left">${b}</td><td>${st.recv}</td><td>${st.ver}</td><td>${st.ver}</td><td><span class="${st.pend > 0 ? 'highlight-cell' : ''}">${st.pend}</span></td><td>${st.inProg}</td><td>${st.inProg}</td></tr>`;
             bTotalRecv += st.recv; bTotalVer += st.ver; bTotalPend += st.pend; bTotalInProg += st.inProg;
         });
         if (Object.keys(blockStats).length === 0) {
-            bHtml = `<tr><td colspan="7" style="text-align:center;padding:20px;">No Data Available</td></tr>`;
+            bHtml = `<tr><td colspan="8" style="text-align:center;padding:20px;">No Data Available</td></tr>`;
         } else {
-            bHtml += `<tr class="total-row"><td></td><td class="text-left">Total</td><td>${bTotalRecv}</td><td>${bTotalVer}</td><td>${bTotalPend}</td><td>${bTotalVer}</td><td>${bTotalInProg}</td></tr>`;
+            bHtml += `<tr class="total-row"><td></td><td class="text-left">Total</td><td>${bTotalRecv}</td><td>${bTotalVer}</td><td>${bTotalVer}</td><td>${bTotalPend}</td><td>${bTotalInProg}</td><td>${bTotalInProg}</td></tr>`;
         }
         document.getElementById('blockTableBody').innerHTML = bHtml;
 
         // Dept Table
         let dHtml = '';
         sno = 1;
-        let dTotalRecv = 0, dTotalVer = 0, dTotalPend = 0;
+        let dTotalRecv = 0, dTotalVer = 0, dTotalPend = 0, dTotalInProg = 0;
         Object.keys(deptStats).forEach(d => {
             let st = deptStats[d];
             let badge = st.pend === 0 && st.recv > 0 ? `<span class="badge badge-completed"><span class="badge-dot"></span>Completed</span>` : `<span class="badge badge-progress"><span class="badge-dot"></span>In Progress</span>`;
-            dHtml += `<tr><td>${sno++}</td><td class="text-left">${d}</td><td>${st.recv}</td><td>${st.ver}</td><td>${st.pend}</td><td>${st.ver}</td><td>${badge}</td></tr>`;
-            dTotalRecv += st.recv; dTotalVer += st.ver; dTotalPend += st.pend;
+            dHtml += `<tr><td>${sno++}</td><td class="text-left">${d}</td><td>${st.recv}</td><td>${st.ver}</td><td>${st.ver}</td><td>${st.pend}</td><td>${st.inProg}</td><td>${st.inProg}</td><td>${badge}</td></tr>`;
+            dTotalRecv += st.recv; dTotalVer += st.ver; dTotalPend += st.pend; dTotalInProg += st.inProg;
         });
         if (Object.keys(deptStats).length === 0) {
-            dHtml = `<tr><td colspan="7" style="text-align:center;padding:20px;">No Data Available</td></tr>`;
+            dHtml = `<tr><td colspan="9" style="text-align:center;padding:20px;">No Data Available</td></tr>`;
         } else {
-            dHtml += `<tr class="total-row"><td></td><td class="text-left">Total</td><td>${dTotalRecv}</td><td>${dTotalVer}</td><td>${dTotalPend}</td><td>${dTotalVer}</td><td></td></tr>`;
+            dHtml += `<tr class="total-row"><td></td><td class="text-left">Total</td><td>${dTotalRecv}</td><td>${dTotalVer}</td><td>${dTotalVer}</td><td>${dTotalPend}</td><td>${dTotalInProg}</td><td>${dTotalInProg}</td><td></td></tr>`;
         }
         document.getElementById('departmentTableBody').innerHTML = dHtml;
     }
