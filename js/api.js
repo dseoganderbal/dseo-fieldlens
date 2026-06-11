@@ -60,6 +60,17 @@ function createGASRunner(successHandler, failureHandler) {
                             }
                             if (successHandler) successHandler(result.data);
                         } else {
+                            if (result.message && result.message.includes('Unauthorized')) {
+                                if (typeof logoutSession === 'function') {
+                                    logoutSession();
+                                }
+                                if (typeof showCustomAlert === 'function') {
+                                    showCustomAlert('Session Expired', 'Your session has expired. Please log in again.', false, null, 'warning');
+                                } else {
+                                    alert('Your session has expired. Please log in again.');
+                                }
+                                return;
+                            }
                             if (failureHandler) failureHandler(new Error(result.message));
                             else console.error("GAS Error:", result.message);
                         }
