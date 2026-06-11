@@ -319,7 +319,10 @@
                 img1.onerror = () => hideLoader("wd_photoImg1");
                 img1.src = getThumbUrl(photos[0]);
             } else {
-                document.getElementById("wd_photoImg1").src = "";
+                let img1 = document.getElementById("wd_photoImg1");
+                img1.onload = null;
+                img1.onerror = null;
+                img1.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
                 document.getElementById("wd_photoPreview1").style.display = "none";
                 document.getElementById("wd_photoPlaceholder1").style.display = "flex";
             }
@@ -330,7 +333,10 @@
                 img2.onerror = () => hideLoader("wd_photoImg2");
                 img2.src = getThumbUrl(photos[1]);
             } else {
-                document.getElementById("wd_photoImg2").src = "";
+                let img2 = document.getElementById("wd_photoImg2");
+                img2.onload = null;
+                img2.onerror = null;
+                img2.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
                 document.getElementById("wd_photoPreview2").style.display = "none";
                 document.getElementById("wd_photoPlaceholder2").style.display = "flex";
             }

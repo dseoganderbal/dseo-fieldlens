@@ -601,7 +601,9 @@
         prefix = prefix || '';
         const imgEl = document.getElementById(`${prefix}photoImg${n}`);
         if (imgEl) {
-            imgEl.src = '';
+            imgEl.onload = null;
+            imgEl.onerror = null;
+            imgEl.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
             delete imgEl.dataset.driveUrl;
             delete imgEl.dataset.isNew;
         }
