@@ -298,7 +298,7 @@
                 loader = document.createElement('div');
                 loader.className = 'photo-loader-overlay';
                 loader.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-                loader.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.7);display:flex;justify-content:center;align-items:center;font-size:24px;color:var(--primary);z-index:5;border-radius:12px;';
+                loader.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:var(--bg-glass);display:flex;justify-content:center;align-items:center;font-size:24px;color:var(--accent);z-index:5;border-radius:12px;';
                 parent.appendChild(loader);
             }
             loader.style.display = 'flex';
