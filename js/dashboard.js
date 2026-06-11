@@ -18,6 +18,15 @@
                 if (!document.getElementById('totalWorks')) return;
                 if (!Array.isArray(data)) { data = []; }
                 dashboardWorks = data.filter(w => pvYear === 'All' || !pvYear || w.pvyear === pvYear);
+                
+                const now = new Date();
+                const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const dateString = now.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+                const lastUpdatedEl = document.getElementById('dashboardLastUpdated');
+                if (lastUpdatedEl) {
+                    lastUpdatedEl.textContent = `Last updated: ${dateString}, ${timeString}`;
+                }
+
                 renderDashboardAggregates(dashboardWorks);
             })
             .withFailureHandler(function (error) {
