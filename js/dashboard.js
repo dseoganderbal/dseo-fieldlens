@@ -94,12 +94,12 @@
                 }
             }
 
-            // Block (BDO as agency)
             let b = w.agency;
             if (b && b.toUpperCase().includes('BDO')) {
-                if (!blockStats[b]) blockStats[b] = { recv: 0, ver: 0, pend: 0 };
+                if (!blockStats[b]) blockStats[b] = { recv: 0, ver: 0, pend: 0, inProg: 0 };
                 blockStats[b].recv++;
                 if (isVerified) blockStats[b].ver++; else blockStats[b].pend++;
+                if (w.status === 'In Progress') blockStats[b].inProg++;
             }
 
             // Dept
@@ -186,16 +186,16 @@
         // Block Table
         let bHtml = '';
         sno = 1;
-        let bTotalRecv = 0, bTotalVer = 0, bTotalPend = 0;
+        let bTotalRecv = 0, bTotalVer = 0, bTotalPend = 0, bTotalInProg = 0;
         Object.keys(blockStats).forEach(b => {
             let st = blockStats[b];
-            bHtml += `<tr><td>${sno++}</td><td class="text-left">${b}</td><td>${st.recv}</td><td>${st.ver}</td><td><span class="${st.pend > 0 ? 'highlight-cell' : ''}">${st.pend}</span></td><td>${st.ver}</td><td>0</td></tr>`;
-            bTotalRecv += st.recv; bTotalVer += st.ver; bTotalPend += st.pend;
+            bHtml += `<tr><td>${sno++}</td><td class="text-left">${b}</td><td>${st.recv}</td><td>${st.ver}</td><td><span class="${st.pend > 0 ? 'highlight-cell' : ''}">${st.pend}</span></td><td>${st.ver}</td><td>${st.inProg}</td></tr>`;
+            bTotalRecv += st.recv; bTotalVer += st.ver; bTotalPend += st.pend; bTotalInProg += st.inProg;
         });
         if (Object.keys(blockStats).length === 0) {
             bHtml = `<tr><td colspan="7" style="text-align:center;padding:20px;">No Data Available</td></tr>`;
         } else {
-            bHtml += `<tr class="total-row"><td></td><td class="text-left">Total</td><td>${bTotalRecv}</td><td>${bTotalVer}</td><td>${bTotalPend}</td><td>${bTotalVer}</td><td>0</td></tr>`;
+            bHtml += `<tr class="total-row"><td></td><td class="text-left">Total</td><td>${bTotalRecv}</td><td>${bTotalVer}</td><td>${bTotalPend}</td><td>${bTotalVer}</td><td>${bTotalInProg}</td></tr>`;
         }
         document.getElementById('blockTableBody').innerHTML = bHtml;
 
