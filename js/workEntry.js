@@ -353,35 +353,7 @@
                 setVal('ue_GeoCoords', 'geo coordinates');
                 setVal('ue_Remarks', 'general remarks');
 
-                const getThumbUrl = (url) => {
-                    if (!url) return '';
-                    if (url.startsWith('data:image')) return url;
-                    const match = url.match(/[-\w]{25,}/);
-                    if (match) return 'https://lh3.googleusercontent.com/d/' + match[0];
-                    return url;
-                };
 
-                const showLoader = (imgId) => {
-                    let imgEl = document.getElementById(imgId);
-                    if (!imgEl) return;
-                    let parent = imgEl.parentElement;
-                    let loader = parent.querySelector('.photo-loader-overlay');
-                    if (!loader) {
-                        loader = document.createElement('div');
-                        loader.className = 'photo-loader-overlay';
-                        loader.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-                        loader.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:var(--bg-card);display:flex;justify-content:center;align-items:center;font-size:24px;color:var(--accent);z-index:5;border-radius:12px;';
-                        parent.appendChild(loader);
-                    }
-                    loader.style.display = 'flex';
-                };
-
-                const hideLoader = (imgId) => {
-                    let imgEl = document.getElementById(imgId);
-                    if (imgEl && imgEl.parentElement.querySelector('.photo-loader-overlay')) {
-                        imgEl.parentElement.querySelector('.photo-loader-overlay').style.display = 'none';
-                    }
-                };
 
                 const processEditPhotos = (photos) => {
                     if (photos && photos[0]) {
