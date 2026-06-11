@@ -1074,6 +1074,26 @@
         color: var(--warning);
     }
 
+    .trend-blue {
+        background: rgba(99, 102, 241, 0.15);
+        color: var(--accent-light);
+    }
+
+    .trend-purple {
+        background: rgba(168, 85, 247, 0.15);
+        color: #a855f7;
+    }
+
+    .trend-red {
+        background: rgba(239, 68, 68, 0.15);
+        color: var(--danger);
+    }
+
+    .trend-success {
+        background: rgba(16, 185, 129, 0.15);
+        color: var(--success);
+    }
+
     .kpi-value {
         font-size: 32px;
         font-weight: 800;
