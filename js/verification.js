@@ -416,6 +416,7 @@
                 hasPhoto = true;
             } else {
                 p1El.style.display = 'none';
+                p1El.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
             }
 
             if (b64_2) {
@@ -424,6 +425,7 @@
                 hasPhoto = true;
             } else {
                 p2El.style.display = 'none';
+                p2El.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
             }
 
             const photoTable = document.getElementById('pdfPhotoTable');
@@ -484,6 +486,12 @@
                     document.getElementById('pdfTemplateWrapper').style.left = '-9999px';
                 });
             }
+        }).catch(err => {
+            console.error('PDF Promise chain error', err);
+            showCustomAlert('Notice', 'An error occurred while preparing the PDF. Check console for details.', false, null, 'error');
+            btn.innerHTML = ogText;
+            btn.disabled = false;
+            document.getElementById('pdfTemplateWrapper').style.left = '-9999px';
         });
     }
     function initGeo() {
