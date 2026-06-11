@@ -14,6 +14,15 @@
         if (typeof removePhoto === 'function') {
             removePhoto(1);
             removePhoto(2);
+            
+            // Start individual loaders immediately when fetch begins
+            document.getElementById("photoPreview1").style.display = "block";
+            document.getElementById("photoPlaceholder1").style.display = "none";
+            if(typeof showLoader === 'function') showLoader("photoImg1");
+
+            document.getElementById("photoPreview2").style.display = "block";
+            document.getElementById("photoPlaceholder2").style.display = "none";
+            if(typeof showLoader === 'function') showLoader("photoImg2");
         }
         const textFields = ['vfDateReceipt', 'vfWorkName', 'vfConstituency', 'vfDept', 'vfAgency', 'vfBlock', 'vfLocation', 'vfAACost', 'vfAllottedCost', 'vfClaim', 'vfAdminApproval', 'vfDateVisit', 'vfRemarks', 'vfLeftOut', 'vfCompletionStatus', 'vfSignboard', 'vfQuality'];
         textFields.forEach(id => {
@@ -41,6 +50,10 @@
 
                 if (!data || !data.code) {
                     notFound.style.display = 'flex';
+                    if (typeof removePhoto === 'function') {
+                        removePhoto(1);
+                        removePhoto(2);
+                    }
                     return;
                 }
 
@@ -154,15 +167,6 @@
                         removePhoto(2);
                     }
                 };
-                // Start individual loaders immediately while fetching
-                document.getElementById("photoPreview1").style.display = "block";
-                document.getElementById("photoPlaceholder1").style.display = "none";
-                showLoader("photoImg1");
-
-                document.getElementById("photoPreview2").style.display = "block";
-                document.getElementById("photoPlaceholder2").style.display = "none";
-                showLoader("photoImg2");
-
                 google.script.run
                     .withSuccessHandler(processVerifiedPhotos)
                     .withFailureHandler(() => processVerifiedPhotos(['', '']))
@@ -181,6 +185,10 @@
                 btn.innerHTML = origBtnHtml;
                 btn.disabled = false;
                 notFound.style.display = 'flex';
+                if (typeof removePhoto === 'function') {
+                    removePhoto(1);
+                    removePhoto(2);
+                }
             })
             .getWorkEntry(sessionStorage.getItem("cdf_auth_token"), code);
     }
