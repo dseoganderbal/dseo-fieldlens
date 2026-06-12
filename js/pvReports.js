@@ -187,7 +187,8 @@
             document.getElementById('pvr_DispName').value = w.name || '';
             document.getElementById('pvr_DispLoc').value = (w.location || '-') + ' / ' + (w.block || '-');
             document.getElementById('pvr_DispDept').value = (w.dept || '-') + ' / ' + (w.agency || '-');
-            document.getElementById('pvr_DispCost').value = 'AA: ₹ ' + (w.cost || 0) + ' Lakhs, Claim: ₹ ' + (w.claim || 0) + ' Lakhs';
+            document.getElementById('pvr_DispAACost').value = '₹ ' + (w.cost || 0);
+            document.getElementById('pvr_DispClaim').value = '₹ ' + (w.claim || 0);
 
             document.getElementById('pvr_SubmissionNo').value = w.reportSubmissionNo || '';
             let dt = w.submissionDate || '';
@@ -253,8 +254,8 @@
             return;
         }
 
-        if (docFile.size > 1 * 1024 * 1024) {
-            showCustomAlert('Alert', 'Signed Document size cannot exceed 1 MB.');
+        if (docFile.size > 500 * 1024) {
+            showCustomAlert('Alert', 'Signed Document size cannot exceed 500 Kb.');
             return;
         }
 

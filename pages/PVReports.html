@@ -79,9 +79,12 @@
                         <label class="field-label">Workcode</label>
                         <input type="text" class="form-control" id="pvr_DispWorkCode" disabled />
                     </div>
+                    <div class="form-field"></div>
+                </div>
+                <div class="form-row full">
                     <div class="form-field">
                         <label class="field-label">Name of Work</label>
-                        <input type="text" class="form-control" id="pvr_DispName" disabled />
+                        <textarea class="form-control" id="pvr_DispName" disabled rows="2" style="resize:none; font-family:inherit; font-size:inherit;"></textarea>
                     </div>
                 </div>
                 <div class="form-row">
@@ -96,10 +99,13 @@
                 </div>
                 <div class="form-row">
                     <div class="form-field">
-                        <label class="field-label">AA Cost / Claim</label>
-                        <input type="text" class="form-control" id="pvr_DispCost" disabled />
+                        <label class="field-label">AA Cost (in Lakhs)</label>
+                        <input type="text" class="form-control" id="pvr_DispAACost" disabled />
                     </div>
-                    <div class="form-field"></div>
+                    <div class="form-field">
+                        <label class="field-label">Claim (in Lakhs)</label>
+                        <input type="text" class="form-control" id="pvr_DispClaim" disabled />
+                    </div>
                 </div>
 
                 <!-- Editable Section -->
@@ -114,14 +120,13 @@
                         <input type="date" class="form-control" id="pvr_SubmissionDate" />
                     </div>
                 </div>
-                <div class="form-row">
+                <div class="form-row full">
                     <div class="form-field">
                         <label class="field-label">Report Submitted To <span class="req">*</span></label>
                         <select class="form-control" id="pvr_SubmittedTo">
                             <option value="">Select Option</option>
                         </select>
                     </div>
-                    <div class="form-field"></div>
                 </div>
                 
                 <div class="form-section-label" style="margin-top:10px;"><i class="fa-solid fa-file-pdf"></i> Signed Document</div>
@@ -130,7 +135,7 @@
                         <label class="field-label" for="pvr_Document">Upload Signed Document (PDF only) <span class="req">*</span></label>
                         <div id="pvr_CurrentDocLink" style="margin-bottom:8px; display:none;"></div>
                         <input type="file" class="form-control" id="pvr_Document" accept="application/pdf" />
-                        <div class="field-hint">Upload the finalized signed copy of the PV Report. Max 5MB.</div>
+                        <div class="field-hint">Upload the finalized signed copy of the PV Report. Max 500Kb.</div>
                     </div>
                 </div>
 
