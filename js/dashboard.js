@@ -9,6 +9,7 @@
         document.getElementById('totalWorks').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
         document.getElementById('verifiedWorks').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
         document.getElementById('pendingWorks').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        document.getElementById('inspectionWorks').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
         document.getElementById('claimAmount').innerHTML = '...';
 
         const loaders = `<tr><td colspan="7" style="text-align:center;padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</td></tr>`;
