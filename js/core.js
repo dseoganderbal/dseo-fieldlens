@@ -103,9 +103,6 @@ let worksData = [];
                     window.currentDataVersion = versionStr;
                     
                     // Invalidate all local caches
-                    isDashboardDataLoaded = false;
-                    isWorksDataLoaded = false;
-                    isPVRDataLoaded = false;
                     if (typeof window.clearApiCache === 'function') window.clearApiCache();
                     
                     if (typeof showCustomAlert === 'function') {
