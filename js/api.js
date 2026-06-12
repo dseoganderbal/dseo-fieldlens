@@ -95,3 +95,9 @@ function createGASRunner(successHandler, failureHandler) {
 
 // Replace the Google Apps Script environment object with our proxy
 window.google.script.run = createGASRunner(null, null);
+
+window.clearApiCache = function() {
+    for (let key in requestCache) {
+        delete requestCache[key];
+    }
+};

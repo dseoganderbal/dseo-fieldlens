@@ -15,6 +15,10 @@
     }
     function loadWorksData() {
 
+        if (typeof window.checkForUpdatesAndRefresh === 'function') {
+            window.checkForUpdatesAndRefresh(() => loadWorksData());
+        }
+
         const year = document.getElementById('wlFilterworksyear').value;
         //console.log("Loading works data for:", year);
 

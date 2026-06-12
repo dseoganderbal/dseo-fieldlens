@@ -1,4 +1,8 @@
     function loadPVReportsData() {
+        if (typeof window.checkForUpdatesAndRefresh === 'function') {
+            window.checkForUpdatesAndRefresh(() => loadPVReportsData());
+        }
+
         const year = document.getElementById('pvrFilterworksyear').value;
         const tb = document.getElementById('pvrTableBody');
         if (tb) tb.innerHTML = `<tr><td colspan="7" class="center" style="padding:20px;">Loading data...</td></tr>`;

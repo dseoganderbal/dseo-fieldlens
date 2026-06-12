@@ -82,6 +82,64 @@ let worksData = [];
 
 
     /*                                           
+       STALE-WHILE-REVALIDATE LOGIC
+                                               */
+    window.currentDataVersion = null;
+    window.isCheckingVersion = false;
+
+    window.checkForUpdatesAndRefresh = function(refreshCallback) {
+        if (window.isCheckingVersion) return;
+        
+        const token = sessionStorage.getItem('cdf_auth_token');
+        if (!token) return;
+        
+        window.isCheckingVersion = true;
+        
+        google.script.run
+            .withSuccessHandler(function(versionStr) {
+                window.isCheckingVersion = false;
+                if (window.currentDataVersion !== null && window.currentDataVersion !== versionStr) {
+                    // Data changed!
+                    window.currentDataVersion = versionStr;
+                    
+                    // Invalidate all local caches
+                    isDashboardDataLoaded = false;
+                    isWorksDataLoaded = false;
+                    isPVRDataLoaded = false;
+                    if (typeof window.clearApiCache === 'function') window.clearApiCache();
+                    
+                    if (typeof showCustomAlert === 'function') {
+                        // We use a small temporary toast instead of an alert, but since we don't have a toast component natively yet,
+                        // let's create a minimal toast popup dynamically.
+                        let toast = document.getElementById('syncToast');
+                        if (!toast) {
+                            toast = document.createElement('div');
+                            toast.id = 'syncToast';
+                            toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:var(--primary);color:#fff;padding:12px 20px;border-radius:8px;font-size:14px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:opacity 0.3s;';
+                            document.body.appendChild(toast);
+                        }
+                        toast.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin"></i> New data available. Refreshing view...';
+                        toast.style.opacity = '1';
+                        
+                        setTimeout(() => {
+                            toast.style.opacity = '0';
+                        }, 2500);
+                    }
+                    
+                    // Re-fetch the current page data
+                    refreshCallback();
+                } else if (window.currentDataVersion === null) {
+                    window.currentDataVersion = versionStr;
+                }
+            })
+            .withFailureHandler(function(err) {
+                window.isCheckingVersion = false;
+                console.error("Failed to check data version:", err);
+            })
+            .getDataVersion(token);
+    };
+
+    /*                                           
        PAGE SYSTEM
                                                */
     // Load Dashboard by default when the app opens

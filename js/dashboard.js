@@ -2,6 +2,14 @@
         const worksYear = document.getElementById('worksYear').value;
         const pvYear = document.getElementById('pvYear').value;
 
+        if (isDashboardDataLoaded && dashboardWorks.length > 0) {
+            renderDashboardAggregates(dashboardWorks);
+            if (typeof window.checkForUpdatesAndRefresh === 'function') {
+                window.checkForUpdatesAndRefresh(() => updateDashboard());
+            }
+            return;
+        }
+
         document.getElementById('totalWorks').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
         document.getElementById('verifiedWorks').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
         document.getElementById('pendingWorks').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
