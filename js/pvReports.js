@@ -159,6 +159,23 @@
         pg.appendChild(createBtn('<i class="fa-solid fa-chevron-right" style="font-size:11px;"></i>', pvrCurrentPage === pages, () => { pvrCurrentPage++; pvrRender(); }));
         pg.appendChild(createBtn('<i class="fa-solid fa-angles-right" style="font-size:11px;"></i>', pvrCurrentPage === pages, () => { pvrCurrentPage = pages; pvrRender(); }));
     }
+    function populatePVRDropdown(selectedValue) {
+        const sel = document.getElementById('pvr_SubmittedTo');
+        sel.innerHTML = '<option value="">Select Option</option>';
+        if (typeof masterData !== 'undefined' && masterData.length > 0) {
+            const options = [...new Set(masterData.map(r => r['Report Submitted To']).filter(Boolean))];
+            options.forEach(opt => {
+                const o = document.createElement('option');
+                o.value = opt;
+                o.textContent = opt;
+                sel.appendChild(o);
+            });
+            if (selectedValue) {
+                sel.value = selectedValue;
+            }
+        }
+    }
+
     function openPVRModal(code, year) {
         document.getElementById('pvr_WorkCode').value = code;
         document.getElementById('pvr_WorksYear').value = year;
@@ -178,6 +195,21 @@
                 dt = dt.split('-').reverse().join('-');
             }
             document.getElementById('pvr_SubmissionDate').value = dt;
+        }
+
+        let existingSubmittedTo = w ? (w.reportSubmittedTo || '') : '';
+
+        if (typeof isMasterDataLoaded !== 'undefined' && !isMasterDataLoaded) {
+            document.getElementById('pvr_SubmittedTo').innerHTML = '<option value="">Loading options...</option>';
+            google.script.run
+                .withSuccessHandler(function(data) {
+                    masterData = data;
+                    isMasterDataLoaded = true;
+                    populatePVRDropdown(existingSubmittedTo);
+                })
+                .getMasterData(sessionStorage.getItem("cdf_auth_token"));
+        } else {
+            populatePVRDropdown(existingSubmittedTo);
         }
 
         document.getElementById('pvr_Document').value = '';
@@ -213,10 +245,11 @@
         const year = document.getElementById('pvr_WorksYear').value;
         const subNo = document.getElementById('pvr_SubmissionNo').value.trim();
         const subDate = document.getElementById('pvr_SubmissionDate').value;
+        const submittedTo = document.getElementById('pvr_SubmittedTo').value;
         const docFile = document.getElementById('pvr_Document').files[0];
 
-        if (!subNo || !subDate || !docFile) {
-            showCustomAlert('Notice', 'Please fill in Report Submission No, Date, and select a PDF file.');
+        if (!subNo || !subDate || !submittedTo || !docFile) {
+            showCustomAlert('Notice', 'Please fill in Report Submission No, Date, Submitted To, and select a PDF file.');
             return;
         }
 
@@ -239,7 +272,8 @@
                 code: code,
                 worksyear: year,
                 reportSubmissionNo: subNo,
-                submissionDate: subDate
+                submissionDate: subDate,
+                reportSubmittedTo: submittedTo
             };
             const fileData = {
                 doc: b64,
