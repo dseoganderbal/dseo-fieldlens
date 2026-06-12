@@ -515,6 +515,7 @@
             const imgEl = document.getElementById(`${prefix}photoImg${n}`);
             imgEl.src = dataUrl;
             imgEl.dataset.isNew = "true";
+            if (typeof hideLoader === 'function') hideLoader(`${prefix}photoImg${n}`);
             document.getElementById(`${prefix}photoPreview${n}`).style.display = 'block';
             document.getElementById(`${prefix}photoPlaceholder${n}`).style.display = 'none';
             event.target.value = ''; // clear input
@@ -585,6 +586,7 @@
             imgEl.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
             delete imgEl.dataset.driveUrl;
             delete imgEl.dataset.isNew;
+            if (typeof hideLoader === 'function') hideLoader(`${prefix}photoImg${n}`);
         }
         document.getElementById(`${prefix}photoPreview${n}`).style.display = 'none';
         document.getElementById(`${prefix}photoPlaceholder${n}`).style.display = 'flex';
