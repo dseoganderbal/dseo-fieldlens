@@ -90,7 +90,7 @@ let pvrFinalDocBlob = null;
                     <td class="action-cell">
                         <button type="button" class="btn btn-outline" style="padding: 4px 8px; font-size: 11px;" title="View Signed Document" onclick="viewPVSignedDoc('${w.code}', '${w.worksyear || ''}')"><i class="fa-solid fa-eye"></i></button>
                         ${sessionStorage.getItem('cdf_user_role') !== 'Viewer' ? `<button type="button" class="btn btn-outline" style="padding: 4px 8px; font-size: 11px;" title="Submit/Edit PV Report" onclick="openPVRModal('${w.code}', '${w.worksyear || ''}')"><i class="fa-solid fa-file-signature"></i></button>` : ''}
-                        ${sessionStorage.getItem('cdf_user_role') === 'Admin' ? `<button type="button" class="btn btn-outline" style="padding: 4px 8px; font-size: 11px; color: red;" title="Delete Submission" onclick="deletePVR('${w.code}', '${w.worksyear || ''}', this)"><i class="fa-solid fa-trash"></i></button>` : ''}
+                        ${sessionStorage.getItem('cdf_user_role') === 'Admin' ? `<button type="button" class="btn btn-outline" style="padding: 4px 8px; font-size: 11px; color: ${(!w.reportSubmissionNo || w.reportSubmissionNo.trim() === '') ? 'var(--text-muted)' : 'red'};" title="Delete Submission" onclick="deletePVR('${w.code}', '${w.worksyear || ''}', this)" ${(!w.reportSubmissionNo || w.reportSubmissionNo.trim() === '') ? 'disabled' : ''}><i class="fa-solid fa-trash"></i></button>` : ''}
                     </td>
                 `;
                 tbody.appendChild(tr);
