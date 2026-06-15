@@ -71,9 +71,9 @@
                 document.getElementById('vfAgency').value = data.agency || '';
                 document.getElementById('vfBlock').value = data.block || '';
                 document.getElementById('vfLocation').value = data.location || '';
-                document.getElementById('vfAACost').value = 'Rs. ' + String(data.cost || '0');
-                document.getElementById('vfAllottedCost').value = 'Rs. ' + String(data.allotted || '0');
-                document.getElementById('vfClaim').value = 'Rs. ' + String(data.claim || '0');
+                document.getElementById('vfAACost').value = 'Rs. ' + String(data.cost || '0') + ' Lakhs';
+                document.getElementById('vfAllottedCost').value = 'Rs. ' + String(data.allotted || '0') + ' Lakhs';
+                document.getElementById('vfClaim').value = 'Rs. ' + String(data.claim || '0') + ' Lakhs';
                 document.getElementById('vfAdminApproval').value = data['position a/a'] || data['position aa'] || '';
 
                 fields.style.display = 'grid';
