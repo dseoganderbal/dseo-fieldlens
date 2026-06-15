@@ -290,6 +290,7 @@ let pvrFinalDocBlob = null;
 
             google.script.run
                 .withSuccessHandler(function() {
+                    if (typeof window.clearApiCache === 'function') window.clearApiCache();
                     showCustomAlert('Notice', 'PV Report Submitted Successfully!');
                     closePVRModal();
                     btn.innerHTML = ogBtn;
@@ -344,6 +345,7 @@ let pvrFinalDocBlob = null;
         showCustomAlert('Delete PV Report', 'Are you sure you want to delete the submission for ' + code + '?', true, function() {
             google.script.run
                 .withSuccessHandler(function() {
+                    if (typeof window.clearApiCache === 'function') window.clearApiCache();
                     showCustomAlert('Success', 'PV Submission deleted successfully.', false, null, 'success');
                     loadPVReportsData();
                 })
