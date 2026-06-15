@@ -447,6 +447,11 @@ let pvrFinalDocBlob = null;
             canvas.height = viewport.height;
             await page1.render({ canvasContext: ctx, viewport: viewport }).promise;
 
+            const url = URL.createObjectURL(finalBlob);
+            const dl = document.getElementById('pvrDownloadLink');
+            dl.href = url;
+            dl.style.display = 'inline-flex';
+
             setTimeout(closeCustomAlert, 1500);
 
         } catch (err) {
