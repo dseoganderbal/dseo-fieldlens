@@ -1,3 +1,5 @@
+let pvrFinalDocBlob = null;
+
     function loadPVReportsData() {
         if (typeof window.checkForUpdatesAndRefresh === 'function') {
             window.checkForUpdatesAndRefresh(() => loadPVReportsData());
@@ -214,6 +216,9 @@
         }
 
         document.getElementById('pvr_Document').value = '';
+        pvrFinalDocBlob = null;
+        document.getElementById('pvrPreviewSide').style.display = 'none';
+        document.getElementById('pvrModal').classList.remove('pvr-wide');
         
         document.getElementById('pvrModalOverlay').classList.add('open');
         document.getElementById('pvrModal').classList.add('open');
@@ -249,13 +254,15 @@
         const submittedTo = document.getElementById('pvr_SubmittedTo').value;
         const docFile = document.getElementById('pvr_Document').files[0];
 
-        if (!subNo || !subDate || !submittedTo || !docFile) {
+        if (!subNo || !subDate || !submittedTo || (!pvrFinalDocBlob && !document.getElementById('pvr_Document').files[0])) {
             showCustomAlert('Notice', 'Please fill in Report Submission No, Date, Submitted To, and select a PDF file.');
             return;
         }
 
-        if (docFile.size > 500 * 1024) {
-            showCustomAlert('Alert', 'Signed Document size cannot exceed 500 Kb.');
+        let uploadBlob = pvrFinalDocBlob || document.getElementById('pvr_Document').files[0];
+
+        if (uploadBlob.size > 500 * 1024) {
+            showCustomAlert('Alert', 'Signed Document size cannot exceed 500 Kb. Please try compressing manually.');
             return;
         }
 
@@ -296,7 +303,7 @@
                 })
                 .updatePVSubmission(sessionStorage.getItem("cdf_auth_token"), payload, fileData);
         };
-        reader.readAsDataURL(docFile);
+        reader.readAsDataURL(uploadBlob);
     }
     function deletePVR(code, year, btn) {
         const w = pvReportsData.find(x => x.code === code);
@@ -369,4 +376,111 @@
                 showCustomAlert('Alert', 'Error fetching document: ' + err);
             })
             .getSignedDocUrl(sessionStorage.getItem("cdf_auth_token"), code, year);
+    }
+
+    async function handlePVRDocumentChange(event) {
+        pvrFinalDocBlob = null;
+        document.getElementById('pvrPreviewSide').style.display = 'none';
+        document.getElementById('pvrModal').classList.remove('pvr-wide');
+        
+        if (event.target.files && event.target.files.length > 0) {
+            const file = event.target.files[0];
+            
+            if (file.type !== 'application/pdf') {
+                showCustomAlert('Error', 'Please select a valid PDF file.');
+                event.target.value = '';
+                return;
+            }
+
+            if (file.size > 500 * 1024) {
+                showCustomAlert('Info', 'File size is more than 500kb. Now compressing...', false, null, 'info');
+                await pvrAutoCompressPdf(file);
+            } else {
+                pvrFinalDocBlob = file;
+            }
+        }
+    }
+
+    async function pvrAutoCompressPdf(file) {
+        const btn = document.getElementById('btnSubmitPVR');
+        const ogBtnHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Compressing...';
+        btn.disabled = true;
+
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const typedarray = new Uint8Array(arrayBuffer);
+            const pdfDoc = await pdfjsLib.getDocument(typedarray).promise;
+
+            const profiles = [
+                { scale: 1.5, quality: 0.9 },
+                { scale: 1.5, quality: 0.7 },
+                { scale: 1.0, quality: 0.8 },
+                { scale: 1.0, quality: 0.6 },
+                { scale: 0.8, quality: 0.5 }
+            ];
+
+            let finalBlob = null;
+            for (const profile of profiles) {
+                finalBlob = await pvrCompressWithProfile(pdfDoc, profile.scale, profile.quality);
+                if (finalBlob.size <= 500 * 1024) {
+                    break;
+                }
+            }
+
+            pvrFinalDocBlob = finalBlob;
+
+            document.getElementById('pvrModal').classList.add('pvr-wide');
+            document.getElementById('pvrPreviewSide').style.display = 'flex';
+            
+            const reduction = ((file.size - finalBlob.size) / file.size * 100).toFixed(1);
+            document.getElementById('pvrPreviewStats').innerHTML = `
+                Compressed Size: ${(finalBlob.size / 1024).toFixed(1)} KB <br>
+                <span style="font-size:12px; font-weight:normal; color:var(--text-muted);">(Reduced by ${reduction}%)</span>
+            `;
+            
+            const page1 = await pdfDoc.getPage(1);
+            const viewport = page1.getViewport({ scale: 1.0 });
+            const canvas = document.getElementById('pvrPreviewCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            await page1.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+            setTimeout(closeCustomAlert, 1500);
+
+        } catch (err) {
+            showCustomAlert('Error', 'Failed to compress PDF. Please use the standalone PDF Compressor.');
+            document.getElementById('pvr_Document').value = '';
+        } finally {
+            btn.innerHTML = ogBtnHtml;
+            btn.disabled = false;
+        }
+    }
+
+    async function pvrCompressWithProfile(pdfDoc, scale, quality) {
+        const { jsPDF } = window.jspdf;
+        let doc = null;
+
+        for (let i = 1; i <= pdfDoc.numPages; i++) {
+            const page = await pdfDoc.getPage(i);
+            const viewport = page.getViewport({ scale: scale });
+            const canvas = document.createElement('canvas');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            const ctx = canvas.getContext('2d');
+            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+            const imgData = canvas.toDataURL('image/jpeg', quality);
+            
+            const orientation = viewport.width > viewport.height ? 'l' : 'p';
+            if (i === 1) {
+                doc = new jsPDF({ orientation: orientation, unit: 'px', format: [viewport.width, viewport.height] });
+            } else {
+                doc.addPage([viewport.width, viewport.height], orientation);
+            }
+            doc.addImage(imgData, 'JPEG', 0, 0, viewport.width, viewport.height);
+        }
+
+        return doc.output('blob');
     }

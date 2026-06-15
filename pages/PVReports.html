@@ -67,83 +67,100 @@
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
-        <div class="modal-body">
-            <form class="wd-form-view" id="pvrFormView" style="display:flex; flex-direction:column; gap:16px;">
-                <input type="hidden" id="pvr_WorkCode" />
-                <input type="hidden" id="pvr_WorksYear" />
-                
-                <!-- Locked Info Section -->
-                <div class="form-section-label" style="margin-top:0;"><i class="fa-solid fa-circle-info"></i> Work Details (Locked)</div>
-                <div class="form-row">
-                    <div class="form-field">
-                        <label class="field-label">Workcode</label>
-                        <input type="text" class="form-control" id="pvr_DispWorkCode" disabled />
+        <div class="modal-body pvr-split-body">
+            <div class="pvr-form-side">
+                <form class="wd-form-view" id="pvrFormView" style="display:flex; flex-direction:column; gap:16px;">
+                    <input type="hidden" id="pvr_WorkCode" />
+                    <input type="hidden" id="pvr_WorksYear" />
+                    
+                    <!-- Locked Info Section -->
+                    <div class="form-section-label" style="margin-top:0;"><i class="fa-solid fa-circle-info"></i> Work Details (Locked)</div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="field-label">Workcode</label>
+                            <input type="text" class="form-control" id="pvr_DispWorkCode" disabled />
+                        </div>
+                        <div class="form-field"></div>
                     </div>
-                    <div class="form-field"></div>
-                </div>
-                <div class="form-row full">
-                    <div class="form-field">
-                        <label class="field-label">Name of Work</label>
-                        <textarea class="form-control" id="pvr_DispName" disabled rows="2" style="resize:none;"></textarea>
+                    <div class="form-row full">
+                        <div class="form-field">
+                            <label class="field-label">Name of Work</label>
+                            <textarea class="form-control" id="pvr_DispName" disabled rows="2" style="resize:none;"></textarea>
+                        </div>
                     </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-field">
-                        <label class="field-label">Location / Block</label>
-                        <input type="text" class="form-control" id="pvr_DispLoc" disabled />
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="field-label">Location / Block</label>
+                            <input type="text" class="form-control" id="pvr_DispLoc" disabled />
+                        </div>
+                        <div class="form-field">
+                            <label class="field-label">Department / Agency</label>
+                            <input type="text" class="form-control" id="pvr_DispDept" disabled />
+                        </div>
                     </div>
-                    <div class="form-field">
-                        <label class="field-label">Department / Agency</label>
-                        <input type="text" class="form-control" id="pvr_DispDept" disabled />
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="field-label">AA Cost (in Lakhs)</label>
+                            <input type="text" class="form-control" id="pvr_DispAACost" disabled />
+                        </div>
+                        <div class="form-field">
+                            <label class="field-label">Claim (in Lakhs)</label>
+                            <input type="text" class="form-control" id="pvr_DispClaim" disabled />
+                        </div>
                     </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-field">
-                        <label class="field-label">AA Cost (in Lakhs)</label>
-                        <input type="text" class="form-control" id="pvr_DispAACost" disabled />
-                    </div>
-                    <div class="form-field">
-                        <label class="field-label">Claim (in Lakhs)</label>
-                        <input type="text" class="form-control" id="pvr_DispClaim" disabled />
-                    </div>
-                </div>
 
-                <!-- Editable Section -->
-                <div class="form-section-label" style="margin-top:10px;"><i class="fa-solid fa-file-signature"></i> Submission Details</div>
-                <div class="form-row">
-                    <div class="form-field">
-                        <label class="field-label">Report Submission No <span class="req">*</span></label>
-                        <input type="text" class="form-control" id="pvr_SubmissionNo" placeholder="e.g. DSEO/PV/25/123" />
+                    <!-- Editable Section -->
+                    <div class="form-section-label" style="margin-top:10px;"><i class="fa-solid fa-file-signature"></i> Submission Details</div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="field-label">Report Submission No <span class="req">*</span></label>
+                            <input type="text" class="form-control" id="pvr_SubmissionNo" placeholder="e.g. DSEO/PV/25/123" />
+                        </div>
+                        <div class="form-field">
+                            <label class="field-label">Date of Submission <span class="req">*</span></label>
+                            <input type="date" class="form-control" id="pvr_SubmissionDate" />
+                        </div>
                     </div>
-                    <div class="form-field">
-                        <label class="field-label">Date of Submission <span class="req">*</span></label>
-                        <input type="date" class="form-control" id="pvr_SubmissionDate" />
+                    <div class="form-row full">
+                        <div class="form-field">
+                            <label class="field-label">Report Submitted To <span class="req">*</span></label>
+                            <select class="form-control" id="pvr_SubmittedTo">
+                                <option value="">Select Option</option>
+                            </select>
+                        </div>
                     </div>
+                    
+                    <div class="form-section-label" style="margin-top:10px;"><i class="fa-solid fa-file-pdf"></i> Signed Document</div>
+                    <div class="form-row full">
+                        <div class="form-field">
+                            <label class="field-label" for="pvr_Document">Upload Signed Document (PDF only) <span class="req">*</span></label>
+                            <div id="pvr_CurrentDocLink" style="margin-bottom:8px; display:none;"></div>
+                            <input type="file" class="form-control" id="pvr_Document" accept="application/pdf" onchange="handlePVRDocumentChange(event)" />
+                            <div class="field-hint">Upload the finalized signed copy of the PV Report. Max 500Kb.</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:12px;">
+                        <button type="button" class="btn btn-outline" onclick="closePVRModal()">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="btnSubmitPVR" onclick="submitPVReport()"><i class="fa-solid fa-cloud-arrow-up"></i> Submit Report</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="pvr-preview-side" id="pvrPreviewSide">
+                <div style="font-weight:600; margin-bottom:4px; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-file-pdf" style="color:var(--primary); font-size:18px;"></i> Compressed Document Preview
                 </div>
-                <div class="form-row full">
-                    <div class="form-field">
-                        <label class="field-label">Report Submitted To <span class="req">*</span></label>
-                        <select class="form-control" id="pvr_SubmittedTo">
-                            <option value="">Select Option</option>
-                        </select>
-                    </div>
+                <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px; text-align:center;">First page snapshot to verify readability</div>
+                
+                <div id="pvrPreviewStats" style="font-size:14px; font-weight:700; margin-bottom:16px; text-align:center; padding:8px 16px; border-radius:6px; width:100%;">
+                    <!-- Stats populated by JS -->
                 </div>
                 
-                <div class="form-section-label" style="margin-top:10px;"><i class="fa-solid fa-file-pdf"></i> Signed Document</div>
-                <div class="form-row full">
-                    <div class="form-field">
-                        <label class="field-label" for="pvr_Document">Upload Signed Document (PDF only) <span class="req">*</span></label>
-                        <div id="pvr_CurrentDocLink" style="margin-bottom:8px; display:none;"></div>
-                        <input type="file" class="form-control" id="pvr_Document" accept="application/pdf" />
-                        <div class="field-hint">Upload the finalized signed copy of the PV Report. Max 500Kb.</div>
-                    </div>
+                <div style="position:relative; width:100%; display:flex; justify-content:center; background:#fff; padding:10px; border-radius:4px; border:1px solid #ddd;">
+                    <canvas id="pvrPreviewCanvas" style="max-width:100%; height:auto; box-shadow:0 4px 12px rgba(0,0,0,0.15);"></canvas>
                 </div>
-
-                <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:12px;">
-                    <button type="button" class="btn btn-outline" onclick="closePVRModal()">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="btnSubmitPVR" onclick="submitPVReport()"><i class="fa-solid fa-cloud-arrow-up"></i> Submit Report</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 
