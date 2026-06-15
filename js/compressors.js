@@ -1,9 +1,11 @@
 function initImageCompressor() {
     document.getElementById('icQuality').addEventListener('input', function() {
         document.getElementById('icQualityVal').textContent = this.value + '%';
+        document.getElementById('icTargetSize').value = '';
     });
     document.getElementById('icScale').addEventListener('input', function() {
         document.getElementById('icScaleVal').textContent = this.value + '%';
+        document.getElementById('icTargetSize').value = '';
     });
 
     const icUploadZone = document.getElementById('icUploadZone');
@@ -176,6 +178,10 @@ function icDownload() {
 function initPdfCompressor() {
     document.getElementById('pcQuality').addEventListener('input', function() {
         document.getElementById('pcQualityVal').textContent = this.value + '%';
+        document.getElementById('pcTargetSize').value = '';
+    });
+    document.getElementById('pcRenderDpi').addEventListener('change', function() {
+        document.getElementById('pcTargetSize').value = '';
     });
 
     const pcUploadZone = document.getElementById('pcUploadZone');
