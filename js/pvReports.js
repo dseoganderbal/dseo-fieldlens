@@ -397,7 +397,40 @@ let pvrFinalDocBlob = null;
                 await pvrAutoCompressPdf(file);
             } else {
                 pvrFinalDocBlob = file;
+                await pvrRenderPreview(file, file.size);
             }
+        }
+    }
+
+    async function pvrRenderPreview(blob, originalSize) {
+        try {
+            document.getElementById('pvrModal').classList.add('pvr-wide');
+            document.getElementById('pvrPreviewSide').style.display = 'flex';
+            
+            const reduction = originalSize > blob.size ? ((originalSize - blob.size) / originalSize * 100).toFixed(1) : 0;
+            
+            let statsHtml = `File Size: ${(blob.size / 1024).toFixed(1)} KB <a id="pvrDownloadLink" href="#" download="document.pdf" style="display:inline-flex; align-items:center; margin-left:8px; text-decoration:none;" title="Download to Verify"><i class="fa-solid fa-download" style="color:var(--success); font-size:18px;"></i></a>`;
+            if (reduction > 0) {
+                statsHtml += `<br><span style="font-size:12px; font-weight:normal; color:var(--text-muted);">(Reduced by ${reduction}%)</span>`;
+            }
+            document.getElementById('pvrPreviewStats').innerHTML = statsHtml;
+
+            const url = URL.createObjectURL(blob);
+            document.getElementById('pvrDownloadLink').href = url;
+
+            const arrayBuffer = await blob.arrayBuffer();
+            const typedarray = new Uint8Array(arrayBuffer);
+            const pdfDoc = await pdfjsLib.getDocument(typedarray).promise;
+
+            const page1 = await pdfDoc.getPage(1);
+            const viewport = page1.getViewport({ scale: 1.0 });
+            const canvas = document.getElementById('pvrPreviewCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            await page1.render({ canvasContext: ctx, viewport: viewport }).promise;
+        } catch(e) {
+            console.error("Preview render failed", e);
         }
     }
 
@@ -429,28 +462,7 @@ let pvrFinalDocBlob = null;
             }
 
             pvrFinalDocBlob = finalBlob;
-
-            document.getElementById('pvrModal').classList.add('pvr-wide');
-            document.getElementById('pvrPreviewSide').style.display = 'flex';
-            
-            const reduction = ((file.size - finalBlob.size) / file.size * 100).toFixed(1);
-            document.getElementById('pvrPreviewStats').innerHTML = `
-                Compressed Size: ${(finalBlob.size / 1024).toFixed(1)} KB <br>
-                <span style="font-size:12px; font-weight:normal; color:var(--text-muted);">(Reduced by ${reduction}%)</span>
-            `;
-            
-            const page1 = await pdfDoc.getPage(1);
-            const viewport = page1.getViewport({ scale: 1.0 });
-            const canvas = document.getElementById('pvrPreviewCanvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            await page1.render({ canvasContext: ctx, viewport: viewport }).promise;
-
-            const url = URL.createObjectURL(finalBlob);
-            const dl = document.getElementById('pvrDownloadLink');
-            dl.href = url;
-            dl.style.display = 'inline-flex';
+            await pvrRenderPreview(finalBlob, file.size);
 
             setTimeout(closeCustomAlert, 1500);
 
