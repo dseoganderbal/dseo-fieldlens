@@ -2901,3 +2901,18 @@
         }
     }
 
+
+/* PV Reports Split Layout */
+.pvr-split-body { display: flex; flex-direction: row; gap: 20px; overflow: hidden; }
+.pvr-form-side { flex: 1; overflow-y: auto; padding-right: 5px; }
+.pvr-preview-side { flex: 1; display: none; flex-direction: column; background: var(--bg-secondary); border-radius: 8px; padding: 16px; align-items: center; overflow-y: auto; border: 1px solid var(--border-color); }
+@media (max-width: 768px) {
+    .pvr-split-body { flex-direction: column; }
+    .pvr-form-side { padding-right: 0; overflow-y: visible; }
+    .pvr-preview-side { overflow-y: visible; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 10px; }
+    .pvr-preview-side #pvrPreviewStats { width: 50% !important; order: 1; text-align: left !important; }
+    .pvr-preview-side > div[style*="position:relative"] { width: 45% !important; order: 2; margin-bottom: 0 !important; }
+}
+.modal.pvr-wide { max-width: 900px; }
+
+@media (max-width: 768px) { .pvr-preview-side #pvrPreviewStats { font-size: 12px !important; } }
