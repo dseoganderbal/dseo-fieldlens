@@ -32,21 +32,25 @@
             confirmBtn.className = 'btn btn-primary';
             confirmBtn.style.background = 'var(--danger)';
             confirmBtn.style.boxShadow = '0 4px 16px var(--danger-glow)';
+            confirmBtn.style.borderColor = 'var(--danger)';
         } else if (type === 'success') {
             iconDiv.innerHTML = '<i class="fa-solid fa-circle-check" style="color:var(--success);"></i>';
             confirmBtn.className = 'btn btn-success';
             confirmBtn.style.background = '';
             confirmBtn.style.boxShadow = '';
+            confirmBtn.style.borderColor = '';
         } else if (type === 'warning' || isConfirm) {
             iconDiv.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i>';
             confirmBtn.className = 'btn btn-primary';
-            confirmBtn.style.background = '';
-            confirmBtn.style.boxShadow = '';
+            confirmBtn.style.background = '#f59e0b';
+            confirmBtn.style.boxShadow = '0 4px 16px rgba(245,158,11,0.3)';
+            confirmBtn.style.borderColor = '#f59e0b';
         } else {
             iconDiv.innerHTML = '<i class="fa-solid fa-circle-info" style="color:var(--primary);"></i>';
             confirmBtn.className = 'btn btn-primary';
             confirmBtn.style.background = '';
             confirmBtn.style.boxShadow = '';
+            confirmBtn.style.borderColor = '';
         }
 
         const btnCancel = document.getElementById('customAlertCancel');

@@ -255,7 +255,7 @@ let pvrFinalDocBlob = null;
         const docFile = document.getElementById('pvr_Document').files[0];
 
         if (!subNo || !subDate || !submittedTo || (!pvrFinalDocBlob && !document.getElementById('pvr_Document').files[0])) {
-            showCustomAlert('Notice', 'Please fill in Report Submission No, Date, Submitted To, and select a PDF file.');
+            showCustomAlert('Missing Information', 'The Report Submission No, Date of Submission, Report Submitted To, and a Signed Document are mandatory to submit a PV Report. Please fill in all required fields.', false, null, 'error');
             return;
         }
 
